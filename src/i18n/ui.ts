@@ -35,6 +35,7 @@ export const ui = {
     'search.articles': 'articles',
     'sidebar.recentPosts': 'Recent Posts',
     'sidebar.categories': 'Categories',
+    'footer.rights': 'All rights reserved',
   },
   ar: {
     'nav.home': 'الرئيسية',
@@ -65,5 +66,6 @@ export const ui = {
     'search.articles': 'مقالات',
     'sidebar.recentPosts': 'أحدث المقالات',
     'sidebar.categories': 'التصنيفات',
+    'footer.rights': 'جميع الحقوق محفوظة',
   },
 } as const;
