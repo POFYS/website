@@ -7,9 +7,15 @@ const t = useTranslations(lang);
 const isRTL = lang === 'ar';
 const base = import.meta.env.BASE_URL;
 
-const mdPostsGlob = import.meta.glob('../content/blog/*.md', { eager: true });
-const mdxPostsGlob = import.meta.glob('../content/blog/*.mdx', { eager: true });
-const allPosts = [...Object.values(mdPostsGlob), ...Object.values(mdxPostsGlob)] as any[];
+const mdPostsGlob = import.meta.glob('../content/blog/**/*.md', { eager: true });
+const mdxPostsGlob = import.meta.glob('../content/blog/**/*.mdx', { eager: true });
+
+const allPostsRaw = [...Object.values(mdPostsGlob), ...Object.values(mdxPostsGlob)] as any[];
+const allPosts = allPostsRaw.filter((post: any) => {
+  const isArabicPost = post.file.includes('/ar/');
+  return lang === 'ar' ? isArabicPost : !isArabicPost;
+});
+
 const recentPosts = allPosts
   .sort((a: any, b: any) => new Date(b.frontmatter.date).getTime() - new Date(a.frontmatter.date).getTime())
   .slice(0, 5);
