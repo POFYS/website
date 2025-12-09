@@ -1,0 +1,158 @@
+---
+import Layout from '../components/Layout.astro';
+import { config } from '../config';
+
+const { social } = config;
+---
+
+<Layout title="Contact | POFYS" description="Get in touch with the Popular Organization of Free Yemeni Socialists. Join the movement for a free, sovereign, and united Yemen.">
+  <div class="contact-page">
+    <header class="page-header">
+      <h1 class="page-title">Contact</h1>
+      <p class="page-description">
+        Get in touch to learn more about POFYS, join the movement, or collaborate on building a free Yemen.
+      </p>
+      <hr class="page-rule" />
+    </header>
+
+    <div class="contact-content">
+      <div class="contact-info">
+        <h2>Join the Struggle</h2>
+        <p>
+          Whether you want to get involved in organizing, share information about corruption, 
+          or learn more about our mission, we want to hear from you. POFYS is a movement built 
+          by Yemenis for Yemen; And every voice matters.
+        </p>
+        
+        <div class="contact-links">
+          {social.email && (
+            <a href={`mailto:${social.email}`} class="contact-link">
+              <span class="contact-label">Email</span>
+              {social.email}
+            </a>
+          )}
+          
+          {social.twitter && (
+            <a href={social.twitter} target="_blank" rel="noopener noreferrer" class="contact-link">
+              <span class="contact-label">Twitter/X</span>
+              @free_yemenis
+            </a>
+          )}
+          
+          {social.instagram && (
+            <a href={social.instagram} target="_blank" rel="noopener noreferrer" class="contact-link">
+              <span class="contact-label">Instagram</span>
+              @free.yemenis
+            </a>
+          )}
+          
+          {social.substack && (
+            <a href={social.substack} target="_blank" rel="noopener noreferrer" class="contact-link">
+              <span class="contact-label">Substack</span>
+              The Yemenite
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .contact-page {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: calc(var(--grid-unit) * 8);
+  }
+
+  .page-title {
+    font-family: var(--font-heading-primary);
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1.1;
+    margin-bottom: calc(var(--grid-unit) * 3);
+  }
+
+  .page-description {
+    font-size: 1.25rem;
+    line-height: 1.6;
+    color: var(--color-text-secondary);
+    margin-bottom: calc(var(--grid-unit) * 4);
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .page-rule {
+    height: 4px;
+    background-color: var(--color-accent);
+    border: none;
+    width: 120px;
+    margin: 0 auto;
+  }
+
+  .contact-content {
+    line-height: 1.7;
+  }
+
+  .contact-info h2 {
+    font-family: var(--font-heading-secondary);
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin-bottom: calc(var(--grid-unit) * 3);
+  }
+
+  .contact-links {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--grid-unit) * 2);
+    margin-top: calc(var(--grid-unit) * 4);
+  }
+
+  .contact-link {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    padding: calc(var(--grid-unit) * 2);
+    border: 2px solid var(--color-border);
+    transition: all 0.2s ease;
+  }
+
+  .contact-link:hover,
+  .contact-link:focus {
+    border-color: var(--color-accent);
+    background-color: var(--color-surface);
+  }
+
+  .contact-label {
+    font-family: var(--font-heading-secondary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    margin-bottom: calc(var(--grid-unit) / 2);
+  }
+
+  .contact-link:hover .contact-label,
+  .contact-link:focus .contact-label {
+    color: var(--color-accent);
+  }
+
+  @media (max-width: 768px) {
+    .page-title {
+      font-size: 2.5rem;
+    }
+
+    .page-description {
+      font-size: 1.125rem;
+    }
+  }
+</style>
