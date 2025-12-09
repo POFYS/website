@@ -1,7 +1,7 @@
 ---
-import Layout from '../components/Layout.astro';
-import { config } from '../config';
-import { getLangFromUrl, useTranslations } from '../i18n/utils';
+import Layout from '../../components/Layout.astro';
+import { config } from '../../config';
+import { getLangFromUrl, useTranslations } from '../../i18n/utils';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
@@ -9,7 +9,7 @@ const { social } = config;
 ---
 
 <Layout title={`${t('contact.title')} | POFYS`} description={t('contact.description')}>
-  <div class="contact-page">
+  <div class="contact-page" dir="rtl" lang="ar">
     <header class="page-header">
       <h1 class="page-title">{t('contact.title')}</h1>
       <p class="page-description">
@@ -22,29 +22,28 @@ const { social } = config;
       <div class="contact-info">
         <h2>{t('contact.heading')}</h2>
         <p>
-          Whether you want to get involved in organizing, share information about corruption, 
-          or learn more about our mission, we want to hear from you. POFYS is a movement built 
-          by Yemenis for Yemen; And every voice matters.
+          سواء كنت ترغب في المشاركة في التنظيم أو مشاركة معلومات حول الفساد أو معرفة المزيد عن مهمتنا، نريد أن نسمع منك. 
+          POFYS هي حركة بناها اليمنيون من أجل اليمن؛ وكل صوت مهم.
         </p>
         
         <div class="contact-links">
           {social.email && (
             <a href={`mailto:${social.email}`} class="contact-link">
-              <span class="contact-label">Email</span>
+              <span class="contact-label">البريد الإلكتروني</span>
               {social.email}
             </a>
           )}
           
           {social.twitter && (
             <a href={social.twitter} target="_blank" rel="noopener noreferrer" class="contact-link">
-              <span class="contact-label">Twitter/X</span>
+              <span class="contact-label">تويتر/إكس</span>
               @free_yemenis
             </a>
           )}
           
           {social.instagram && (
             <a href={social.instagram} target="_blank" rel="noopener noreferrer" class="contact-link">
-              <span class="contact-label">Instagram</span>
+              <span class="contact-label">إنستغرام</span>
               @free.yemenis
             </a>
           )}
@@ -52,7 +51,7 @@ const { social } = config;
           {social.substack && (
             <a href={social.substack} target="_blank" rel="noopener noreferrer" class="contact-link">
               <span class="contact-label">Substack</span>
-              The Yemenite
+              اليمني
             </a>
           )}
         </div>

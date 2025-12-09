@@ -1,6 +1,9 @@
 ---
 import Layout from '../components/Layout.astro';
+import { getLangFromUrl, useTranslations } from '../i18n/utils';
 
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
 const base = import.meta.env.BASE_URL;
 
 // Support both .md and .mdx files
@@ -37,12 +40,12 @@ const sortedCategories = Object.entries(categoryMap)
   });
 ---
 
-<Layout title="Categories | POFYS" description="Browse articles on Yemen by category" showSidebar={true}>
+<Layout title={`${t('categories.title')} | POFYS`} description={t('categories.description')} showSidebar={true}>
   <div class="categories-page">
     <header class="page-header">
-      <h1 class="page-title">Categories</h1>
+      <h1 class="page-title">{t('categories.title')}</h1>
       <p class="page-description">
-        Explore articles on Yemen's history, politics, and culture organized by topic.
+        {t('categories.description')}
       </p>
       <hr class="page-rule" />
     </header>

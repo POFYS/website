@@ -1,11 +1,18 @@
 ---
 import { config } from '../config';
 import ThemeToggle from './ThemeToggle.astro';
+import { getLangFromUrl, useTranslations } from '../i18n/utils';
+import { languages } from '../i18n/ui';
 
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
 const { base = '' } = Astro.site ? { base: import.meta.env.BASE_URL } : { base: '' };
+
+const currentPath = Astro.url.pathname.replace(/^\/(en|ar)/, '') || '/';
+const isRTL = lang === 'ar';
 ---
 
-<header class="site-header">
+<header class="site-header" dir={isRTL ? 'rtl' : 'ltr'}>
   <div class="header-content">
     <!-- Mobile hamburger button - far left on mobile -->
     <button class="hamburger-toggle mobile-only" id="hamburger-toggle" aria-label="Toggle navigation menu" aria-expanded="false">
@@ -17,25 +24,44 @@ const { base = '' } = Astro.site ? { base: import.meta.env.BASE_URL } : { base: 
     </button>
     
     <div class="site-title">
-      <a href={base} class="title-text">
+      <a href={lang === 'en' ? base : `${base}ar/`} class="title-text">
         <img src={base + "inverted_red_star.svg"} class="title-svg" />
-         <span>{config.title}</span>
+         <span>{t('site.title')}</span>
       </a>
     </div>
     
     <div class="header-controls">
       <nav class="main-navigation" role="navigation" aria-label="Main navigation">
         <ul class="nav-list">
-          <li><a href={base} class="nav-link">Home</a></li>
-          <li><a href={base + "blog"} class="nav-link">Blog</a></li>
-          <!-- <li><a href={base + "categories"} class="nav-link">Categories</a></li> -->
-          <li><a href={base + "about"} class="nav-link">About</a></li>
-          <li><a href={base + "contact"} class="nav-link">Contact</a></li>
+          <li><a href={lang === 'en' ? base : `${base}ar/`} class="nav-link">{t('nav.home')}</a></li>
+          <li><a href={lang === 'en' ? `${base}blog` : `${base}ar/blog`} class="nav-link">{t('nav.blog')}</a></li>
+          <!-- <li><a href={lang === 'en' ? `${base}categories` : `${base}ar/categories`} class="nav-link">{t('nav.categories')}</a></li> -->
+          <li><a href={lang === 'en' ? `${base}about` : `${base}ar/about`} class="nav-link">{t('nav.about')}</a></li>
+          <li><a href={lang === 'en' ? `${base}contact` : `${base}ar/contact`} class="nav-link">{t('nav.contact')}</a></li>
         </ul>
       </nav>
       
       <!-- Mobile controls group - RSS and Search on right -->
       <div class="mobile-controls">
+        <!-- Language Switcher -->
+        <div class="language-switcher">
+          {Object.entries(languages).map(([code, name]) => {
+            if (code === lang) return null;
+            
+            const displayText = code === 'ar' ? 'عربي' : code.toUpperCase();
+            
+            return (
+              <a 
+                href={code === 'en' ? `${base}${currentPath.slice(1)}` : `${base}${code}${currentPath}`}
+                class="lang-link"
+                aria-label={`Switch to ${name}`}
+              >
+                {displayText}
+              </a>
+            );
+          })}
+        </div>
+        
         <ThemeToggle />
         <!-- <a href="https://github.com/jdrhyne2/volks-typo" class="github-star-button" target="_blank" rel="noopener" title="Star on GitHub">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -66,18 +92,18 @@ const { base = '' } = Astro.site ? { base: import.meta.env.BASE_URL } : { base: 
 
 <nav class="mobile-menu" id="mobile-menu" aria-label="Mobile navigation">
   <ul class="mobile-nav-list">
-    <li><a href={base} class="mobile-nav-link">Home</a></li>
-    <li><a href={base + "blog"} class="mobile-nav-link">Blog</a></li>
-    <!-- <li><a href={base + "categories"} class="mobile-nav-link">Categories</a></li> -->
-    <li><a href={base + "about"} class="mobile-nav-link">About</a></li>
-    <li><a href={base + "contact"} class="mobile-nav-link">Contact</a></li>
+    <li><a href={lang === 'en' ? base : `${base}ar/`} class="mobile-nav-link">{t('nav.home')}</a></li>
+    <li><a href={lang === 'en' ? `${base}blog` : `${base}ar/blog`} class="mobile-nav-link">{t('nav.blog')}</a></li>
+    <!-- <li><a href={lang === 'en' ? `${base}categories` : `${base}ar/categories`} class="mobile-nav-link">{t('nav.categories')}</a></li> -->
+    <li><a href={lang === 'en' ? `${base}about` : `${base}ar/about`} class="mobile-nav-link">{t('nav.about')}</a></li>
+    <li><a href={lang === 'en' ? `${base}contact` : `${base}ar/contact`} class="mobile-nav-link">{t('nav.contact')}</a></li>
   </ul>
 </nav>
 
 <div class="search-overlay" id="search-overlay">
   <div class="search-container">
     <div class="search-header">
-      <input type="text" class="search-input" id="search-input" placeholder="Search articles..." autocomplete="off">
+      <input type="text" class="search-input" id="search-input" placeholder={t('search.placeholder')} autocomplete="off">
       <button class="search-close" id="search-close" aria-label="Close search">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2"/>
@@ -278,7 +304,7 @@ const { base = '' } = Astro.site ? { base: import.meta.env.BASE_URL } : { base: 
 
   .site-title a {
     display: block;
-    line-height: 0;
+    line-height: 1;
   }
 
   .title-svg {
@@ -300,9 +326,7 @@ const { base = '' } = Astro.site ? { base: import.meta.env.BASE_URL } : { base: 
     color: var(--color-text-primary);
     text-decoration: none;
     padding: calc(var(--grid-unit) / 2) calc(var(--grid-unit));
-    /* padding-bottom: 2px; */
     transition: all 0.2s ease;
-
   }
 
   .header-controls {
@@ -541,6 +565,7 @@ const { base = '' } = Astro.site ? { base: import.meta.env.BASE_URL } : { base: 
     margin: 0;
     padding: 0;
     gap: calc(var(--grid-unit) * 3);
+    transform: translateY(2px);
   }
 
   .nav-link {
@@ -584,6 +609,31 @@ const { base = '' } = Astro.site ? { base: import.meta.env.BASE_URL } : { base: 
     display: flex;
     align-items: center;
     gap: calc(var(--grid-unit) * 2);
+  }
+
+  .language-switcher {
+    display: flex;
+    gap: calc(var(--grid-unit) * 2);
+    align-items: center;
+  }
+
+  .lang-link {
+    font-family: var(--font-heading-secondary);
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-primary);
+    text-decoration: none;
+    padding: calc(var(--grid-unit) / 2) calc(var(--grid-unit));
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+  }
+
+  .lang-link:hover,
+  .lang-link:focus {
+    color: var(--color-accent);
+    border-bottom-color: var(--color-accent);
   }
 
   /* Hide mobile-only hamburger by default */
@@ -702,6 +752,12 @@ const { base = '' } = Astro.site ? { base: import.meta.env.BASE_URL } : { base: 
     background-color: var(--color-surface);
   }
 
+  @media (max-width: 1024px) {
+    .nav-list {
+      gap: calc(var(--grid-unit) * 0.5);
+    }
+  }
+
   @media (max-width: 768px) {
     .site-header {
       padding: calc(var(--grid-unit) * 2) 0;
@@ -810,37 +866,43 @@ const { base = '' } = Astro.site ? { base: import.meta.env.BASE_URL } : { base: 
     }
   }
   
-  @media (max-width: 480px) {
+  @media (max-width: 493px) {
     /* Even smaller mobile adjustments */
     .header-content {
-      padding: 0 calc(var(--grid-unit) * 1.5);
+      padding: 0 calc(var(--grid-unit) * 1);
+      gap: calc(var(--grid-unit) * 1);
     }
     
     .title-svg {
-      height: 28px;
-      max-width: 140px;
+      height: 26px;
+      max-width: 130px;
     }
     
     .mobile-controls {
-      gap: calc(var(--grid-unit) * 0.75) !important;
+      gap: calc(var(--grid-unit) * 0.5) !important;
     }
     
+    .lang-link,
     .github-star-button,
     .rss-toggle,
-    .search-toggle {
-      padding: calc(var(--grid-unit) * 0.5);
-    }
-    
+    .search-toggle,
     .hamburger-toggle {
       padding: calc(var(--grid-unit) * 0.5);
     }
+
+    .hamburger-toggle svg,
+    .search-toggle svg,
+    .rss-toggle svg {
+      width: 22px;
+      height: 22px;
+    }
   }
   
-  @media (max-width: 409px) {
+  @media (max-width: 419px) {
     /* Extra small screens - further adjustments */
     .header-content {
       padding: 0 calc(var(--grid-unit));
-      gap: calc(var(--grid-unit));
+      gap: calc(var(--grid-unit) * 0.5);
     }
     
     .title-svg {
@@ -851,7 +913,8 @@ const { base = '' } = Astro.site ? { base: import.meta.env.BASE_URL } : { base: 
     .mobile-controls {
       gap: calc(var(--grid-unit) * 0.5) !important;
     }
-    
+
+    .lang-link,
     .github-star-button,
     .rss-toggle,
     .search-toggle,

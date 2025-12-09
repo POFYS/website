@@ -1,15 +1,15 @@
 ---
-import Layout from '../components/Layout.astro';
-import { config } from '../config';
-import { getLangFromUrl, useTranslations } from '../i18n/utils';
+import Layout from '../../components/Layout.astro';
+import { config } from '../../config';
+import { getLangFromUrl, useTranslations } from '../../i18n/utils';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
-const { title, description, author, social } = config;
+const { title, author, social } = config;
 ---
 
 <Layout title={`${t('about.title')} | ${title}`} description={t('site.description')}>
-  <div class="about-page">
+  <div class="about-page" dir="rtl" lang="ar">
     <header class="page-header">
       <h1 class="page-title">{t('about.title')}</h1>
       <hr class="page-rule" />
@@ -74,26 +74,24 @@ const { title, description, author, social } = config;
     <div class="content-section">
       <h2>{t('about.pofys')}</h2>
       <p>
-        The Popular Organization of Free Yemeni Socialists (POFYS) is a grassroots political movement 
-        dedicated to fighting corruption, defending Yemen's sovereignty, and building a unified nation 
-        where power serves the people, not the elite.
+        المنظمة الشعبية للاشتراكيين اليمنيين الأحرار (POFYS) هي حركة سياسية شعبية مكرسة لمحاربة الفساد والدفاع عن سيادة اليمن 
+        وبناء أمة موحدة حيث تخدم السلطة الشعب وليس النخبة.
       </p>
       
       <h2>{t('about.mission')}</h2>
       <p>
-        We work to expose corruption, challenge foreign interference, and empower Yemenis to reclaim 
-        their nation. Through education, advocacy, and organizing, we build a movement for a free, 
-        sovereign, and united Yemen.
+        نعمل على كشف الفساد وتحدي التدخل الأجنبي وتمكين اليمنيين من استعادة أمتهم. من خلال التعليم والدعوة والتنظيم، نبني حركة 
+        من أجل يمن حر وسيد وموحد.
       </p>
 
       <h2>{t('about.principles')}</h2>
       <ul>
-        <li><strong>National Sovereignty</strong>: Yemen's future must be determined by Yemenis, free from foreign interference and manipulation</li>
-        <li><strong>Anti-Corruption</strong>: Exposing and dismantling the networks of corruption that have devastated our nation</li>
-        <li><strong>Unity</strong>: Bringing together all Yemenis—North and South, urban and rural—under one vision for a free Yemen</li>
-        <li><strong>Rule of Law</strong>: Building institutions that serve justice, not the powerful</li>
-        <li><strong>People-Centered Governance</strong>: Economic and political systems that prioritize the needs of ordinary Yemenis</li>
-        <li><strong>Youth & Inclusion</strong>: Empowering the next generation to lead Yemen's transformation</li>
+        <li><strong>السيادة الوطنية</strong>: يجب أن يحدد اليمنيون مستقبل اليمن، بعيداً عن التدخل الأجنبي والتلاعب</li>
+        <li><strong>مكافحة الفساد</strong>: كشف وتفكيك شبكات الفساد التي دمرت أمتنا</li>
+        <li><strong>الوحدة</strong>: جمع جميع اليمنيين - الشمال والجنوب، الحضر والريف - تحت رؤية واحدة ليمن حر</li>
+        <li><strong>سيادة القانون</strong>: بناء مؤسسات تخدم العدالة وليس الأقوياء</li>
+        <li><strong>الحوكمة الشعبية</strong>: أنظمة اقتصادية وسياسية تعطي الأولوية لاحتياجات اليمنيين العاديين</li>
+        <li><strong>الشباب والشمول</strong>: تمكين الجيل القادم لقيادة تحول اليمن</li>
       </ul>
     </div>
   </div>

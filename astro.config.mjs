@@ -10,6 +10,13 @@ export default defineConfig({
   // For Netlify/Vercel, leave this undefined (no base path)
   base: process.env.BASE_PATH || undefined,
   integrations: [mdx()],
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en', 'ar'],
+    routing: {
+      prefixDefaultLocale: false
+    }
+  },
   markdown: {
     shikiConfig: {
       theme: 'github-dark',
