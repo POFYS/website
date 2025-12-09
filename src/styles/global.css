@@ -11,6 +11,7 @@
   
   /* Accent Color */
   --color-accent-red: #d00000;
+  --color-accent-yellow: #f8c343;
   
   /* Semantic Colors */
   --color-background: var(--color-white);
@@ -19,6 +20,7 @@
   --color-text-secondary: var(--color-dark-gray);
   --color-text-muted: var(--color-medium-gray);
   --color-border: var(--color-medium-gray);
+  --color-border-accent: var(--color-accent-yellow);
   --color-accent: var(--color-accent-red);
   
   /* Typography */
