@@ -27,6 +27,58 @@ services:
       - pofys-network
     restart: unless-stopped
 
+  strapi:
+    image: node:22-alpine
+    container_name: pofys-strapi
+    restart: unless-stopped
+    working_dir: /srv/app
+    command: sh -c "npm install && npm run start"
+    env_file:
+      - .env
+    volumes:
+      - ./cms:/srv/app
+      - strapi-uploads:/srv/app/public/uploads
+    ports:
+      - '1337:1337'
+    depends_on:
+      - postgres
+    networks:
+      - pofys-network
+
+  postgres:
+    image: postgres:18-alpine
+    container_name: pofys-postgres
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - pofys-network
+
+  webhook:
+    build:
+      context: .
+      dockerfile: Dockerfile.webhook
+    container_name: pofys-webhook
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "9000:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ../..:/workspace
+      - ./.env:/app/.env:ro
+    environment:
+      - WEBHOOK_PORT=9000
+      - REBUILD_SCRIPT=/app/rebuild-hook.sh
+      - PUBLIC_STRAPI_URL=http://strapi:1337
+    networks:
+      - pofys-network
+    depends_on:
+      - strapi
+
   tor:
     build:
       context: .
