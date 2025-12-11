@@ -1,0 +1,44 @@
+networks:
+  pofys-network:
+    driver: bridge
+
+services:
+  nginx-proxy:
+    image: nginx:alpine
+    container_name: pofys-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro
+      - ../../nginx-proxy/keys:/etc/nginx/.keys:ro
+    networks:
+      - pofys-network
+    depends_on:
+      - pofys
+      - strapi
+      - webhook
+    restart: unless-stopped
+
+  pofys:
+    image: pofys-website
+    container_name: pofys
+    networks:
+      - pofys-network
+    restart: unless-stopped
+
+  tor:
+    build:
+      context: .
+      dockerfile: Dockerfile.tor
+    container_name: pofys-tor
+    volumes:
+      - tor-data:/var/lib/tor/hidden_service/
+    networks:
+      - pofys-network
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  strapi-uploads:
+  tor-data:

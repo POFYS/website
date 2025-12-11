@@ -1,0 +1,24 @@
+FROM alpine:latest
+
+RUN apk add --no-cache tor
+
+RUN mkdir -p /var/lib/tor/hidden_service && \
+    chown -R tor:tor /var/lib/tor && \
+    chmod 700 /var/lib/tor/hidden_service
+
+COPY torrc /etc/tor/torrc
+
+RUN chown -R tor:tor /var/lib/tor /etc/tor && \
+    chmod 600 /etc/tor/torrc
+
+RUN echo '#!/bin/sh' > /entrypoint.sh && \
+    echo 'chown -R tor:tor /var/lib/tor/hidden_service' >> /entrypoint.sh && \
+    echo 'chmod 700 /var/lib/tor/hidden_service' >> /entrypoint.sh && \
+    echo 'exec su-exec tor tor -f /etc/tor/torrc' >> /entrypoint.sh && \
+    chmod +x /entrypoint.sh
+
+RUN apk add --no-cache su-exec
+
+EXPOSE 9050
+
+ENTRYPOINT ["/entrypoint.sh"]
