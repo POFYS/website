@@ -15,7 +15,10 @@ pnpm-debug.log*
 
 # environment variables
 .env
-.env.production
+.env.dev
+
+# Strapi CMS
+cms/
 
 # certs
 .keys/
