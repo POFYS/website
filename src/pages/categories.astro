@@ -1,43 +1,54 @@
 ---
 import Layout from '../components/Layout.astro';
 import { getLangFromUrl, useTranslations } from '../i18n/utils';
+import { getCategories, getArticles } from '../utils/strapi';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const base = import.meta.env.BASE_URL;
 
-// Support both .md and .mdx files
-const mdPostsGlob = import.meta.glob('../content/blog/*.md', { eager: true });
-const mdxPostsGlob = import.meta.glob('../content/blog/*.mdx', { eager: true });
+let strapiCategories: any[] = [];
+let categoryMap: Record<string, number> = {};
+let error: string | null = null;
 
-const allPosts = [...Object.values(mdPostsGlob), ...Object.values(mdxPostsGlob)] as any[];
+try {
+  const categoriesResponse = await getCategories({ locale: lang });
+  strapiCategories = categoriesResponse.data;
 
-// Extract all categories from posts
-const allCategories = new Set<string>();
-allPosts.forEach((post: any) => {
-  if (post.frontmatter.categories) {
-    post.frontmatter.categories.forEach((category: string) => {
-      allCategories.add(category);
-    });
-  }
-});
+  const articlesResponse = await getArticles({ pageSize: 100, locale: lang });
 
-// Create category map with post counts
-const categoryMap: Record<string, any[]> = {};
-Array.from(allCategories).forEach((category: string) => {
-  categoryMap[category] = allPosts.filter((post: any) => 
-    post.frontmatter.categories && post.frontmatter.categories.includes(category)
-  );
-});
+  // Count articles per category
+  strapiCategories.forEach(cat => {
+    const categorySlug = cat.slug;
 
-// Sort categories by post count (descending) then alphabetically
-const sortedCategories = Object.entries(categoryMap)
-  .sort((a: any, b: any) => {
-    if (b[1].length !== a[1].length) {
-      return b[1].length - a[1].length;
+    if (!categorySlug) {
+      console.warn('Category missing slug:', cat);
+      return;
     }
-    return a[0].localeCompare(b[0]);
+    
+    const count = articlesResponse.data.filter((article: any) => {
+      const articleCategory = article.category;
+      const articleCategorySlug = articleCategory?.slug;
+      return articleCategorySlug === categorySlug;
+    }).length;
+    categoryMap[cat.id] = count;
   });
+
+  // Filter out categories without slugs
+  strapiCategories = strapiCategories.filter(cat => cat.slug);
+
+  // Sort categories by post count (descending) then alphabetically
+  strapiCategories.sort((a, b) => {
+    const countDiff = categoryMap[b.id] - categoryMap[a.id];
+    if (countDiff !== 0) return countDiff;
+    const nameA = a.name;
+    const nameB = b.name;
+    return nameA.localeCompare(nameB);
+  });
+} catch (e) {
+  console.error('Failed to fetch Strapi categories:', e);
+  error = e instanceof Error ? e.message : 'Unknown error';
+}
 ---
 
 <Layout title={`${t('categories.title')} | POFYS`} description={t('categories.description')} showSidebar={true}>
@@ -50,22 +61,28 @@ const sortedCategories = Object.entries(categoryMap)
       <hr class="page-rule" />
     </header>
 
-    <div class="categories-grid">
-      {sortedCategories.map(([category, posts]: [string, any[]]) => (
-        <div class="category-card">
-          <a href={`${base}categories/${category.toLowerCase().replace(/[\/\s]+/g, '-')}`} class="category-link">
-            <h2 class="category-title">{category}</h2>
-            <p class="category-count">
-              {posts.length} article{posts.length === 1 ? '' : 's'}
-            </p>
-          </a>
-        </div>
-      ))}
-    </div>
+    {!error && strapiCategories.length > 0 && (
+      <div class="categories-grid">
+        {strapiCategories.map((category: any) => {
+          const slug = category.attributes?.slug || category.slug;
+          const name = category.attributes?.name || category.name;
+          return (
+            <div class="category-card">
+              <a href={`${base}categories/${slug}`} class="category-link">
+                <h2 class="category-title">{name}</h2>
+                <p class="category-count">
+                  {categoryMap[category.id]} article{categoryMap[category.id] === 1 ? '' : 's'}
+                </p>
+              </a>
+            </div>
+          );
+        })}
+      </div>
+    )}
 
-    {sortedCategories.length === 0 && (
+    {!error && strapiCategories.length === 0 && (
       <div class="no-categories">
-        <p>No categories found. Add categories to your blog posts in the frontmatter.</p>
+        <p>No categories found.</p>
       </div>
     )}
   </div>
@@ -163,6 +180,16 @@ const sortedCategories = Object.entries(categoryMap)
     padding: calc(var(--grid-unit) * 6);
     color: var(--color-text-muted);
     font-style: italic;
+  }
+
+  .no-categories a {
+    color: var(--color-accent);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .no-categories a:hover {
+    text-decoration: underline;
   }
 
   @media (max-width: 768px) {

@@ -1,0 +1,317 @@
+---
+import Layout from '../components/Layout.astro';
+import { config } from '../config';
+import { getArticles, convertStrapiArticle } from '../utils/strapi';
+import { getLangFromUrl, useTranslations } from '../i18n/utils';
+import { calculateReadingTime } from '../utils/reading-time';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const base = import.meta.env.BASE_URL;
+
+let strapiArticles: any[] = [];
+let error: string | null = null;
+
+try {
+  const response = await getArticles({ 
+    sort: 'publishedAt:desc',
+    pageSize: 100,
+    locale: lang,
+  });
+  strapiArticles = response.data
+    .map(convertStrapiArticle)
+    .filter(article => article !== null)
+    .map(article => {
+      // Calculate reading time for each article
+      const plainText = article.content
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      return {
+        ...article,
+        readingTime: calculateReadingTime(plainText)
+      };
+    });
+} catch (e) {
+  console.error('Failed to fetch Strapi articles:', e);
+  error = e instanceof Error ? e.message : 'Unknown error';
+}
+
+const sortedArticles = strapiArticles.sort((a, b) => 
+  new Date(b.date).getTime() - new Date(a.date).getTime()
+);
+---
+
+<Layout title={`${t('nav.articles')} | POFYS`} description={t('site.description')}>
+  <div class="article-page">
+    <header class="article-header">
+      <h1 class="article-title">{t('article.title')}</h1>
+      <p class="article-description">
+        {t('article.description')}
+      </p>
+      <p class="substack-link">
+        {t('article.substack')} <a href={config.social.substack} target="_blank" rel="noopener noreferrer">{t('article.substackName')}</a>
+      </p>
+      <hr class="article-rule" />
+    </header>
+
+    {!error && sortedArticles.length > 0 ? (
+      <div class="posts-list">
+        {sortedArticles.map((post: any) => (
+          <article class="post-item">
+            <h2 class="post-title">
+              <a href={`${base}articles/${post.slug}`}>{post.title}</a>
+            </h2>
+            
+            <div class="post-meta">
+              <time class="post-date" datetime={post.date.toISOString()}>
+                {new Date(post.date).toLocaleDateString('en-GB', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </time>
+              
+              <span class="post-reading-time">{post.readingTime}</span>
+              
+              {post.categories && post.categories.length > 0 && (
+                <div class="post-categories">
+                  {post.categories.map((category: string) => (
+                    <span class="category">{category}</span>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            {post.excerpt && (
+              <p class="post-excerpt">{post.excerpt}</p>
+            )}
+            
+            <a href={`${base}articles/${post.slug}`} class="read-more">{t('article.readMore')}</a>
+          </article>
+        ))}
+      </div>
+    ) : !error && (
+      <div class="no-posts">
+        <p>No articles available yet.</p>
+      </div>
+    )}
+  </div>
+</Layout>
+
+<style>
+  .article-page {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .article-header {
+    text-align: center;
+    margin-bottom: calc(var(--grid-unit) * 8);
+  }
+
+  .article-title {
+    font-family: var(--font-heading-primary);
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1.1;
+    margin-bottom: calc(var(--grid-unit) * 3);
+  }
+
+  .article-description {
+    font-size: 1.25rem;
+    line-height: 1.6;
+    color: var(--color-text-secondary);
+    margin-bottom: calc(var(--grid-unit) * 2);
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .substack-link {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--color-text-secondary);
+    margin-bottom: calc(var(--grid-unit) * 4);
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .substack-link a {
+    color: var(--color-accent);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s ease;
+  }
+
+  .substack-link a:hover,
+  .substack-link a:focus {
+    color: var(--color-text-primary);
+    text-decoration: underline;
+  }
+
+  .article-rule {
+    height: 4px;
+    background-color: var(--color-accent);
+    border: none;
+    width: 120px;
+    margin: 0 auto;
+  }
+
+  .posts-list {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--grid-unit) * 6);
+  }
+
+  .post-item {
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: calc(var(--grid-unit) * 4);
+  }
+
+  .post-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .post-title {
+    font-family: var(--font-heading-secondary);
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: calc(var(--grid-unit) * 2);
+  }
+
+  .post-title a {
+    color: var(--color-text-primary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .post-title a:hover,
+  .post-title a:focus {
+    color: var(--color-accent);
+  }
+
+  .post-meta {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--grid-unit));
+    margin-bottom: calc(var(--grid-unit) * 2);
+  }
+
+  .post-date {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .post-reading-time {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .post-reading-time::before {
+    content: "•";
+    margin: 0 calc(var(--grid-unit));
+    color: var(--color-border);
+  }
+
+  .post-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: calc(var(--grid-unit) / 2);
+  }
+
+  .category {
+    background-color: var(--color-text-primary);
+    color: white;
+    padding: calc(var(--grid-unit) / 4) calc(var(--grid-unit) / 2);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: 2px;
+  }
+
+  /* Dark mode category styles */
+  :global([data-theme="dark"]) .category {
+    background-color: var(--color-surface);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+  }
+
+  .post-excerpt {
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+    margin-bottom: calc(var(--grid-unit) * 2);
+    font-size: 1.1rem;
+  }
+
+  .read-more {
+    font-family: var(--font-heading-secondary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-accent);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s ease;
+  }
+
+  .read-more:hover,
+  .read-more:focus {
+    color: var(--color-text-primary);
+  }
+
+  .no-posts {
+    text-align: center;
+    padding: calc(var(--grid-unit) * 6);
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+
+  .no-posts code {
+    background-color: var(--color-surface);
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: var(--font-mono);
+  }
+
+  .no-posts a {
+    color: var(--color-accent);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .no-posts a:hover {
+    text-decoration: underline;
+  }
+
+  @media (max-width: 768px) {
+    .article-title {
+      font-size: 2.5rem;
+    }
+
+    .article-description {
+      font-size: 1.125rem;
+    }
+
+    .post-title {
+      font-size: 1.75rem;
+    }
+
+    .post-meta {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>

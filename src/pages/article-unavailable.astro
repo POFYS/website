@@ -1,0 +1,58 @@
+---
+import Layout from '../components/Layout.astro';
+---
+
+<Layout title="Article not available" description="This article isn't available in the selected language">
+  <div class="unavailable-page">
+    <header class="page-header">
+      <h1>Article not available</h1>
+      <p>This article doesn't exist in the selected language yet.</p>
+    </header>
+
+    <div class="actions">
+      <a href="/articles" class="btn">Back to English articles</a>
+      <a href="/ar/articles" class="btn secondary">Browse Arabic articles</a>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .unavailable-page {
+    max-width: 680px;
+    margin: 4rem auto;
+    text-align: center;
+  }
+
+  .page-header h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .page-header p {
+    color: var(--color-text-secondary);
+    margin-bottom: 1.5rem;
+  }
+
+  .actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1.5rem;
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 0.75rem 1.25rem;
+    background: var(--color-accent);
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 700;
+  }
+
+  .btn.secondary {
+    background: transparent;
+    color: var(--color-text-primary);
+    border: 2px solid var(--color-border);
+  }
+</style>
