@@ -1,89 +1,118 @@
 ---
-import Layout from '../components/Layout.astro';
-import { config } from '../config';
-import { getLangFromUrl, useTranslations } from '../i18n/utils';
+import Layout from '../../components/Layout.astro';
+import { config } from '../../config';
+import { getArticles, convertStrapiArticle } from '../../utils/strapi';
+import { getLangFromUrl, useTranslations } from '../../i18n/utils';
+import { calculateReadingTime } from '../../utils/reading-time';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const base = import.meta.env.BASE_URL;
 
-const mdPostsGlob = import.meta.glob('../content/blog/*.md', { eager: true });
-const mdxPostsGlob = import.meta.glob('../content/blog/*.mdx', { eager: true });
+let strapiArticles: any[] = [];
+let error: string | null = null;
 
-const allPosts = [...Object.values(mdPostsGlob), ...Object.values(mdxPostsGlob)] as any[];
-const sortedPosts = allPosts
-  .sort((a: any, b: any) => new Date(b.frontmatter.date).getTime() - new Date(a.frontmatter.date).getTime());
+try {
+  const response = await getArticles({ 
+    sort: 'publishedAt:desc',
+    pageSize: 100,
+    locale: lang,
+  });
+  strapiArticles = response.data
+    .map(convertStrapiArticle)
+    .filter(article => article !== null)
+    .map(article => {
+      const plainText = article.content
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      const readingTime = calculateReadingTime(plainText);
+      return {
+        ...article,
+        readingTime: readingTime
+          .replace('min read', 'دقائق قراءة')
+          .replace('Less than 1', 'أقل من 1')
+      };
+    });
+} catch (e) {
+  console.error('Failed to fetch Strapi articles:', e);
+  error = e instanceof Error ? e.message : 'Unknown error';
+}
+
+const sortedArticles = strapiArticles.sort((a, b) => 
+  new Date(b.date).getTime() - new Date(a.date).getTime()
+);
 ---
 
-<Layout title={`${t('blog.title')} | POFYS`} description={t('site.description')}>
-  <div class="blog-page">
-    <header class="blog-header">
-      <h1 class="blog-title">{t('blog.title')}</h1>
-      <p class="blog-description">
-        {t('blog.description')}
+<Layout title={`${t('nav.articles')} | POFYS`} description={t('site.description')}>
+  <div class="article-page">
+    <header class="article-header">
+      <h1 class="article-title">{t('article.title')}</h1>
+      <p class="article-description">
+        {t('article.description')}
       </p>
       <p class="substack-link">
-        {t('blog.substack')} <a href={config.social.substack} target="_blank" rel="noopener noreferrer">{t('blog.substackName')}</a>
+        {t('article.substack')} <a href={config.social.substack} target="_blank" rel="noopener noreferrer">{t('article.substackName')}</a>
       </p>
-      <hr class="blog-rule" />
+      <hr class="article-rule" />
     </header>
 
-    {sortedPosts.length > 0 ? (
+    {!error && sortedArticles.length > 0 ? (
       <div class="posts-list">
-        {sortedPosts.map((post: any) => (
+        {sortedArticles.map((post: any) => (
           <article class="post-item">
             <h2 class="post-title">
-              <a href={`${base}blog/${post.file.split('/').pop()?.replace(/\.(md|mdx)$/, '')}`}>{post.frontmatter.title}</a>
+              <a href={`${base}ar/articles/${post.slug}`}>{post.title}</a>
             </h2>
-            
+
             <div class="post-meta">
-              <time class="post-date" datetime={post.frontmatter.date}>
-                {new Date(post.frontmatter.date).toLocaleDateString('en-GB', {
+              <time class="post-date" datetime={post.date.toISOString()}>
+                {new Date(post.date).toLocaleDateString('ar-YE', {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric'
                 })}
               </time>
-              
-              <span class="post-reading-time">5 min read</span>
-              
-              {post.frontmatter.categories && (
+
+              <span class="post-reading-time">{post.readingTime}</span>
+
+              {post.categories && post.categories.length > 0 && (
                 <div class="post-categories">
-                  {post.frontmatter.categories.map((category: string) => (
+                  {post.categories.map((category: string) => (
                     <span class="category">{category}</span>
                   ))}
                 </div>
               )}
             </div>
-            
-            {post.frontmatter.excerpt && (
-              <p class="post-excerpt">{post.frontmatter.excerpt}</p>
+
+            {post.excerpt && (
+              <p class="post-excerpt">{post.excerpt}</p>
             )}
-            
-            <a href={`${base}blog/${post.file.split('/').pop()?.replace(/\.(md|mdx)$/, '')}`} class="read-more">{t('blog.readMore')}</a>
+
+            <a href={`${base}ar/articles/${post.slug}`} class="read-more">{t('article.readMore')}</a>
           </article>
         ))}
       </div>
-    ) : (
+    ) : !error && (
       <div class="no-posts">
-        <p>No posts available yet. Start writing by creating files in <code>src/pages/blog/</code></p>
+        <p>لا توجد مقالات متاحة بعد.</p>
       </div>
     )}
   </div>
 </Layout>
 
 <style>
-  .blog-page {
+  .article-page {
     max-width: 800px;
     margin: 0 auto;
   }
 
-  .blog-header {
+  .article-header {
     text-align: center;
     margin-bottom: calc(var(--grid-unit) * 8);
   }
 
-  .blog-title {
+  .article-title {
     font-family: var(--font-heading-primary);
     font-size: 3.5rem;
     font-weight: 900;
@@ -94,7 +123,7 @@ const sortedPosts = allPosts
     margin-bottom: calc(var(--grid-unit) * 3);
   }
 
-  .blog-description {
+  .article-description {
     font-size: 1.25rem;
     line-height: 1.6;
     color: var(--color-text-secondary);
@@ -127,8 +156,7 @@ const sortedPosts = allPosts
     text-decoration: underline;
   }
 
-
-  .blog-rule {
+  .article-rule {
     height: 4px;
     background-color: var(--color-accent);
     border: none;
@@ -260,12 +288,22 @@ const sortedPosts = allPosts
     font-family: var(--font-mono);
   }
 
+  .no-posts a {
+    color: var(--color-accent);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .no-posts a:hover {
+    text-decoration: underline;
+  }
+
   @media (max-width: 768px) {
-    .blog-title {
+    .article-title {
       font-size: 2.5rem;
     }
 
-    .blog-description {
+    .article-description {
       font-size: 1.125rem;
     }
 

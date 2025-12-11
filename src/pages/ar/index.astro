@@ -1,17 +1,36 @@
 ---
 import Layout from '../../components/Layout.astro';
 import { getLangFromUrl, useTranslations } from '../../i18n/utils';
+import { getArticles, convertStrapiArticle } from '../../utils/strapi';
+import { calculateReadingTime } from '../../utils/reading-time';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 
-const mdPostsGlob = import.meta.glob('../../content/blog/ar/*.md', { eager: true });
-const mdxPostsGlob = import.meta.glob('../../content/blog/ar/*.mdx', { eager: true });
-
-const allPosts = [...Object.values(mdPostsGlob), ...Object.values(mdxPostsGlob)] as any[];
-const sortedPosts = allPosts
-  .sort((a: any, b: any) => new Date(b.frontmatter.date).getTime() - new Date(a.frontmatter.date).getTime())
-  .slice(0, 3);
+let sortedPosts: any[] = [];
+try {
+  const articlesResponse = await getArticles({
+    sort: 'publishedAt:desc',
+    pageSize: 3,
+    locale: 'ar'
+  });
+  
+  sortedPosts = articlesResponse.data
+    .map(convertStrapiArticle)
+    .filter(article => article !== null)
+    .map((article: any) => {
+      const plainText = article.content
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      return {
+        ...article,
+        readingTime: calculateReadingTime(plainText)
+      };
+    });
+} catch (error) {
+  console.error('Failed to fetch articles for Arabic home page:', error);
+}
 ---
 
 <Layout title={`${t('site.title')} | POFYS`} description={t('site.description')} showSidebar={false}>
@@ -48,28 +67,30 @@ const sortedPosts = allPosts
               {sortedPosts.map(post => (
                 <article class="demo-post-card">
                   <h3 class="demo-post-title">
-                    <a href={`${import.meta.env.BASE_URL}ar/blog/${post.file.split('/').pop()?.replace(/\.(md|mdx)$/, '')}`}>{post.frontmatter.title}</a>
+                    <a href={`${import.meta.env.BASE_URL}ar/articles/${post.slug}`}>{post.title}</a>
                   </h3>
                   
                   <div class="demo-post-meta">
-                    <time class="demo-post-date" datetime={post.frontmatter.date}>
-                      {new Date(post.frontmatter.date).toLocaleDateString('ar-YE', {
+                    <time class="demo-post-date" datetime={new Date(post.date).toISOString()}>
+                      {new Date(post.date).toLocaleDateString('ar-YE', {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric'
                       })}
                     </time>
-                    <span class="demo-post-reading-time">5 دقائق قراءة</span>
+                    {post.readingTime && (
+                      <span class="demo-post-reading-time">{post.readingTime}</span>
+                    )}
                   </div>
                   
-                  {post.frontmatter.excerpt && (
-                    <p class="demo-post-excerpt">{post.frontmatter.excerpt}</p>
+                  {post.excerpt && (
+                    <p class="demo-post-excerpt">{post.excerpt}</p>
                   )}
                   
-                  {post.frontmatter.categories && (
+                  {post.categories && post.categories.length > 0 && (
                     <div class="demo-post-categories">
-                      {post.frontmatter.categories.map((category: string) => (
-                        <span class="demo-category">{category}</span>
+                      {post.categories.map((category: any) => (
+                        <span class="demo-category">{category.name}</span>
                       ))}
                     </div>
                   )}

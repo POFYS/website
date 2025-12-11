@@ -1,102 +1,107 @@
 ---
 import Layout from '../../components/Layout.astro';
-import TableOfContents from '../../components/TableOfContents.astro';
-import { extractHeadings, filterHeadingsForTOC } from '../../utils/table-of-contents';
-import { calculateReadingTime, extractTextFromMarkdown } from '../../utils/reading-time';
+import { getArticles, convertStrapiArticle } from '../../utils/strapi';
+import { calculateReadingTime } from '../../utils/reading-time';
 
 export async function getStaticPaths() {
-  // Support both .md and .mdx files
-  const mdPostsGlob = import.meta.glob('../../content/blog/*.md', { eager: true });
-  const mdxPostsGlob = import.meta.glob('../../content/blog/*.mdx', { eager: true });
-  
-  const allPosts = [...Object.values(mdPostsGlob), ...Object.values(mdxPostsGlob)] as any[];
-  
-  return allPosts.map((post: any) => {
-    // For import.meta.glob, access raw content through compiledContent or body
-    const rawContent = post.body || post.rawContent?.() || '';
-    const plainText = extractTextFromMarkdown(rawContent);
-    const readingTime = calculateReadingTime(plainText);
-    const allHeadings = extractHeadings(rawContent);
-    const tocHeadings = filterHeadingsForTOC(allHeadings);
+  try {
+    const response = await getArticles({ 
+      sort: 'publishedAt:desc',
+      pageSize: 100,
+      locale: 'en',
+    });
     
-    return {
-      params: { slug: post.file.split('/').pop()?.replace(/\.(md|mdx)$/, '') },
-      props: { post, readingTime, tocHeadings }
-    };
-  });
+    const articles = response.data
+      .map((entity: any) => {
+        const converted = convertStrapiArticle(entity);
+        return { raw: entity, converted };
+      })
+      .filter(a => a.converted !== null);
+
+    return articles.map(({ raw, converted }: any) => {
+      const plainText = converted.content
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      const readingTime = calculateReadingTime(plainText);
+
+      // Find localization for Arabic if present
+      const localizations = raw.localizations || [];
+      const arLoc = localizations.find((l: any) => l.locale === 'ar');
+      const localizedAlternates: Record<string, string> = {};
+      if (arLoc && arLoc.slug) {
+        localizedAlternates['ar'] = `/ar/articles/${arLoc.slug}`;
+      }
+
+      return {
+        params: { slug: converted.slug },
+        props: { article: converted, readingTime, localizedAlternates }
+      };
+    });
+  } catch (error) {
+    console.error('Failed to fetch articles for static paths:', error);
+    return [];
+  }
 }
 
-const { post, readingTime, tocHeadings } = Astro.props;
-const { frontmatter, Content } = post as any;
+const { article, readingTime, localizedAlternates } = Astro.props;
 
-const pageTitle = frontmatter.title;
+if (!article) {
+  return Astro.redirect('/404');
+}
+
+const pageTitle = article.title;
+const publishedTime = article.date ? new Date(article.date).toISOString() : undefined;
 const base = import.meta.env.BASE_URL;
-const publishedTime = frontmatter.date ? new Date(frontmatter.date).toISOString() : undefined;
 ---
 
 <Layout 
   title={pageTitle} 
-  description={frontmatter.description || frontmatter.excerpt}
+  description={article?.description || article?.excerpt}
   type="article"
   publishedTime={publishedTime}
+  localizedAlternates={localizedAlternates}
 >
   <article class="blog-post">
     <header class="post-header">
-      <h1 class="post-title">{frontmatter.title}</h1>
-      
-      <div class="post-meta">
-        <time class="post-date" datetime={frontmatter.date}>
-          {new Date(frontmatter.date).toLocaleDateString('en-GB', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-          })}
-        </time>
+      <h1 class="post-title">{article.title}</h1>
         
-        <span class="post-reading-time">{readingTime}</span>
-        
-        {frontmatter.categories && frontmatter.categories.length > 0 && (
-          <div class="post-categories">
-            {frontmatter.categories.map((category: string) => (
-              <a href={`${base}categories/${category.toLowerCase().replace(/[\/\s]+/g, '-')}`} class="category-tag">
-                {category}
-              </a>
-            ))}
-          </div>
-        )}
-      </div>
-      
-      {frontmatter.excerpt && (
-        <p class="post-excerpt">{frontmatter.excerpt}</p>
-      )}
-      
-      <!-- Monumental Blood Red Rule -->
-      <hr class="monumental-rule" />
-    </header>
-
-    <TableOfContents headings={tocHeadings} />
-
-    <div class="post-content">
-      <Content />
-    </div>
-
-    <footer class="post-footer">
-      {frontmatter.tags && frontmatter.tags.length > 0 && (
-        <div class="post-tags">
-          <span class="tags-label">Tags:</span>
-          <div class="tag-list">
-            {frontmatter.tags.map((tag: string) => (
-              <span class="tag">{tag}</span>
-            ))}
-          </div>
+        <div class="post-meta">
+          <time class="post-date" datetime={article.date.toISOString()}>
+            {new Date(article.date).toLocaleDateString('en-GB', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })}
+          </time>
+          
+          <span class="post-reading-time">{readingTime}</span>
+          
+          {article.categories && article.categories.length > 0 && (
+            <div class="post-categories">
+              {article.categories.map((category: string) => (
+                <span class="category-tag">{category}</span>
+              ))}
+            </div>
+          )}
         </div>
-      )}
-      
-      <div class="post-navigation">
-        <a href={`${base}blog`} class="back-to-blog">← Back to Blog</a>
-      </div>
-    </footer>
-  </article>
+        
+        {article.excerpt && (
+          <p class="post-excerpt">{article.excerpt}</p>
+        )}
+        
+        <!-- Monumental Blood Red Rule -->
+        <hr class="monumental-rule" />
+      </header>
+
+      <div class="post-content" set:html={article.content} />
+
+      <footer class="post-footer">
+        <div class="post-navigation">
+          <a href={`${base}articles`} class="back-to-articles">← Back to Articles</a>
+        </div>
+      </footer>
+    </article>
 </Layout>
 
 <style>
@@ -164,13 +169,6 @@ const publishedTime = frontmatter.date ? new Date(frontmatter.date).toISOString(
     text-transform: uppercase;
     letter-spacing: 0.05em;
     border-radius: 3px;
-    transition: background-color 0.2s ease;
-  }
-
-  .category-tag:hover,
-  .category-tag:focus {
-    background-color: var(--color-accent);
-    text-decoration: none;
   }
 
   /* Dark mode category tag styles */
@@ -178,13 +176,6 @@ const publishedTime = frontmatter.date ? new Date(frontmatter.date).toISOString(
     background-color: var(--color-surface);
     color: var(--color-text-primary);
     border: 1px solid var(--color-border);
-  }
-
-  :global([data-theme="dark"]) .category-tag:hover,
-  :global([data-theme="dark"]) .category-tag:focus {
-    background-color: var(--color-accent);
-    color: white;
-    border-color: var(--color-accent);
   }
 
   .post-excerpt {
@@ -374,39 +365,7 @@ const publishedTime = frontmatter.date ? new Date(frontmatter.date).toISOString(
     gap: calc(var(--grid-unit) * 3);
   }
 
-  .post-tags {
-    display: flex;
-    flex-direction: column;
-    gap: calc(var(--grid-unit));
-  }
-
-  .tags-label {
-    font-family: var(--font-heading-secondary);
-    font-weight: 700;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--color-text-primary);
-  }
-
-  .tag-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: calc(var(--grid-unit));
-  }
-
-  .tag {
-    background-color: var(--color-text-primary);
-    color: var(--color-surface);
-    padding: calc(var(--grid-unit) / 2) calc(var(--grid-unit));
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    border-radius: 3px;
-  }
-
-  .back-to-blog {
+  .back-to-articles {
     font-family: var(--font-heading-secondary);
     font-weight: 700;
     text-transform: uppercase;
@@ -419,8 +378,8 @@ const publishedTime = frontmatter.date ? new Date(frontmatter.date).toISOString(
     display: inline-block;
   }
 
-  .back-to-blog:hover,
-  .back-to-blog:focus {
+  .back-to-articles:hover,
+  .back-to-articles:focus {
     background-color: var(--color-accent);
     color: white;
     text-decoration: none;

@@ -27,9 +27,10 @@ export interface Props {
   type?: 'website' | 'article';
   publishedTime?: string;
   canonical?: string;
+  localizedAlternates?: Record<string, string>;
 }
 
-const { title, description, showSidebar = true, image, type, publishedTime, canonical } = Astro.props;
+const { title, description, showSidebar = true, image, type, publishedTime, canonical, localizedAlternates } = Astro.props;
 ---
 
 <!DOCTYPE html>
@@ -50,7 +51,7 @@ const { title, description, showSidebar = true, image, type, publishedTime, cano
   </head>
   <body>
     <div class="site-wrapper">
-      <Header />
+  <Header localizedAlternates={localizedAlternates} />
       
       <main class="main-content" class:list={{ 'with-sidebar': showSidebar }}>
         {showSidebar && (

@@ -1,38 +1,53 @@
 ---
 import Layout from '../../../components/Layout.astro';
 import { getLangFromUrl, useTranslations } from '../../../i18n/utils';
+import { getCategories, getArticlesByCategory, convertStrapiArticle } from '../../../utils/strapi';
+import { calculateReadingTime } from '../../../utils/reading-time';
 
 export async function getStaticPaths() {
-  const mdPostsGlob = import.meta.glob('../../../content/blog/ar/*.md', { eager: true });
-  const mdxPostsGlob = import.meta.glob('../../../content/blog/ar/*.mdx', { eager: true });
-  
-  const allPosts = [...Object.values(mdPostsGlob), ...Object.values(mdxPostsGlob)] as any[];
-  
-  // Extract all unique categories
-  const allCategories = new Set<string>();
-  allPosts.forEach((post: any) => {
-    if (post.frontmatter.categories) {
-      post.frontmatter.categories.forEach((category: string) => {
-        allCategories.add(category);
+  const paths: any[] = [];
+
+  try {
+    const categoriesResponse = await getCategories();
+
+    for (const category of categoriesResponse.data) {
+      if (!category.slug || !category.name) {
+        console.warn('Category missing slug or name:', category);
+        continue;
+      }
+
+      const articlesResponse = await getArticlesByCategory(category.slug, {
+        sort: 'publishedAt:desc',
+        pageSize: 100
+      });
+
+      const articles = articlesResponse.data
+        .map(convertStrapiArticle)
+        .filter(article => article !== null)
+        .map((article: any) => {
+          const plainText = article.content
+            .replace(/<[^>]*>/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+          return {
+            ...article,
+            readingTime: calculateReadingTime(plainText)
+          };
+        });
+
+      paths.push({
+        params: { category: category.slug },
+        props: {
+          category: category.name,
+          posts: articles
+        }
       });
     }
-  });
+  } catch (error) {
+    console.error('Failed to fetch Strapi categories:', error);
+  }
 
-  // Create paths for each category
-  return Array.from(allCategories).map((category: string) => {
-    const categorySlug = category.toLowerCase().replace(/[\/\s]+/g, '-');
-    const postsInCategory = allPosts.filter((post: any) => 
-      post.frontmatter.categories && post.frontmatter.categories.includes(category)
-    ).sort((a: any, b: any) => new Date(b.frontmatter.date).getTime() - new Date(a.frontmatter.date).getTime());
-
-    return {
-      params: { category: categorySlug },
-      props: {
-        category,
-        posts: postsInCategory
-      }
-    };
-  });
+  return paths;
 }
 
 const { category, posts } = Astro.props;
@@ -63,26 +78,29 @@ const getArticleCount = (count: number) => {
       {posts.map((post: any) => (
         <article class="post-item">
           <h2 class="post-title">
-            <a href={`${base}ar/blog/${post.file.split('/').pop()?.replace(/\.(md|mdx)$/, '')}`}>
-              {post.frontmatter.title}
+            <a href={`${base}ar/articles/${post.slug}`}>
+              {post.title}
             </a>
           </h2>
           
           <div class="post-meta">
-            <time class="post-date" datetime={post.frontmatter.date}>
-              {new Date(post.frontmatter.date).toLocaleDateString('ar-YE', {
+            <time class="post-date" datetime={new Date(post.date).toISOString()}>
+              {new Date(post.date).toLocaleDateString('ar-YE', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric'
               })}
             </time>
+            {post.readingTime && (
+              <span class="post-reading-time">{post.readingTime}</span>
+            )}
           </div>
           
-          {post.frontmatter.excerpt && (
-            <p class="post-excerpt">{post.frontmatter.excerpt}</p>
+          {post.excerpt && (
+            <p class="post-excerpt">{post.excerpt}</p>
           )}
           
-          <a href={`${base}ar/blog/${post.file.split('/').pop()?.replace(/\.(md|mdx)$/, '')}`} class="read-more">
+          <a href={`${base}ar/articles/${post.slug}`} class="read-more">
             اقرأ المزيد ←
           </a>
         </article>
