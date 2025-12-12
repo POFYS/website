@@ -180,10 +180,13 @@ function getLanguageSwitchPath(targetLang: string) {
   let searchData: any[] = [];
   let searchOverlay: HTMLElement | null, searchInput: HTMLInputElement | null, searchResults: HTMLElement | null;
 
+  const currentLang = window.location.pathname.startsWith('/ar') ? 'ar' : 'en';
+
   async function initSearch() {
     try {
       const response = await fetch(base + 'search.json');
       searchData = await response.json();
+      searchData = searchData.filter((post: any) => post.locale === currentLang);
     } catch (error) {
       console.error('Failed to load search data:', error);
     }
@@ -246,38 +249,54 @@ function getLanguageSwitchPath(targetLang: string) {
   function displayResults(results: any[], query: string) {
     if (results.length === 0) {
       if (searchResults) {
+        let text = '';
+        if (currentLang === 'ar') {
+          text = `لم يتم العثور على مقالات لـ "${query}"`;
+        } else {
+          text = `No articles found for "${query}"`;
+        }
         searchResults.innerHTML = `
-          <div class="search-no-results">
-            <p>No articles found for "${query}"</p>
+          <div class="search-no-results" dir=${currentLang === 'ar' ? 'rtl' : 'ltr'}>
+            <p>${text}</p>
           </div>
         `;
       }
       return;
     }
 
-    const resultsHTML = results.map((post: any) => `
-      <article class="search-result">
-        <h3 class="search-result-title">
-          <a href="${base}${post.url.startsWith('/') ? post.url.slice(1) : post.url}">${post.title}</a>
-        </h3>
-        <time class="search-result-date">${new Date(post.date).toLocaleDateString('en-GB', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric'
-        })}</time>
-        ${post.excerpt ? `<p class="search-result-excerpt">${post.excerpt}</p>` : ''}
-        ${post.categories ? `
-          <div class="search-result-categories">
-            ${post.categories.map((cat: string) => `<span class="search-category">${cat}</span>`).join(' ')}
-          </div>
-        ` : ''}
-      </article>
-    `).join('');
+    const resultsHTML = results.map((post: any) => {
+      const dateLocale = currentLang === 'ar' ? 'ar-YE' : 'en-GB';
+      const titleClass = currentLang === 'ar' ? 'search-result-title-ar' : 'search-result-title';
+      return `
+        <article class="search-result" dir=${currentLang === 'ar' ? 'rtl' : 'ltr'}>
+          <h3 class=${titleClass}>
+            <a href="${base}${post.url.startsWith('/') ? post.url.slice(1) : post.url}">${post.title}</a>
+          </h3>
+          <time class="search-result-date">${new Date(post.date).toLocaleDateString(dateLocale, {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          })}</time>
+          ${post.excerpt ? `<p class="search-result-excerpt">${post.excerpt}</p>` : ''}
+          ${post.categories && post.categories.length > 0 ? `
+            <div class="search-result-categories">
+              ${post.categories.map((cat: string) => `<span class="search-category">${cat}</span>`).join(' ')}
+            </div>
+          ` : ''}
+        </article>
+      `;
+    }).join('');
 
     if (searchResults) {
+      let text = '';
+      if (currentLang === 'ar') {
+        text = `تم العثور على ${results.length} مقال${results.length === 1 ? '' : 'ات'} لـ "${query}"`;
+      } else {
+        text = `Found ${results.length} article${results.length === 1 ? '' : 's'} for "${query}"`;
+      }
       searchResults.innerHTML = `
-        <div class="search-results-header">
-          <p>Found ${results.length} article${results.length === 1 ? '' : 's'} for "${query}"</p>
+        <div class="search-results-header" dir=${currentLang === 'ar' ? 'rtl' : 'ltr'}>
+          <p>${text}</p>
         </div>
         ${resultsHTML}
       `;
@@ -494,6 +513,16 @@ function getLanguageSwitchPath(targetLang: string) {
     margin-bottom: calc(var(--grid-unit) * 3);
     text-transform: uppercase;
     letter-spacing: 0.05em;
+  }
+
+  .search-result-title-ar {
+    font-family: var(--font-arabic);
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: calc(var(--grid-unit) * 3);
+    text-transform: uppercase;
+    letter-spacing: 0;
+    word-spacing: 4px;
   }
 
   .search-result-title a {
