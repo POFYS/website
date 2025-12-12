@@ -173,6 +173,36 @@ export async function getArticlesByCategory(categorySlug: string, params?: {
   });
 }
 
+export async function getCommuniques(params?: {
+  page?: number;
+  pageSize?: number;
+  sort?: string;
+  locale?: string;
+}) {
+  const query: Record<string, string> = {
+    'populate': '*',
+  };
+
+  if (params?.page) {
+    query['pagination[page]'] = params.page.toString();
+  }
+  if (params?.pageSize) {
+    query['pagination[pageSize]'] = params.pageSize.toString();
+  }
+  if (params?.sort) {
+    query['sort'] = params.sort;
+  }
+
+  if (params?.locale) {
+    query['filters[locale][$eq]'] = params.locale;
+  }
+
+  return fetchApi<{ data: StrapiEntity<StrapiArticle>[] }>({
+    endpoint: 'communiques',
+    query,
+  });
+}
+
 export function convertStrapiArticle(strapiPost: StrapiEntity<StrapiArticle> | any) {
   if (!strapiPost) {
     console.error('Strapi post is undefined or null');
@@ -237,6 +267,34 @@ export function convertStrapiArticle(strapiPost: StrapiEntity<StrapiArticle> | a
     locale: attributes.locale || 'en',
   };
 }
+
+export function convertStrapiCommunique(strapiPost: StrapiEntity<StrapiArticle> | any) {
+  if (!strapiPost) {
+    console.error('Strapi communique is undefined or null');
+    return null;
+  }
+
+  const attributes = strapiPost.attributes || strapiPost;
+
+  if (!attributes.title) {
+    console.error('Strapi communique missing required fields:', strapiPost);
+    return null;
+  }
+
+  const authorName = attributes.author?.data?.attributes?.name;
+
+  const categoryName = attributes.category?.data?.attributes?.name;
+
+  let content = '';
+  if (attributes.blocks && Array.isArray(attributes.blocks)) {
+    content = attributes.blocks.map((block: any) => {
+      if (block.__component === 'shared.rich-text' && block.body) {
+        let markdown = block.body.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_match: string, alt: string, url: string) => {
+          const fullUrl = url.startsWith('/') ? `${STRAPI_URL}${url}` : url;
+          return `![${alt}](${fullUrl})`;
+        });
+        const html = marked.parse(markdown, { async: false }) as string;
+        return html.trim();
       }
       if (block.__component === 'shared.quote' && block.quote) {
         return `<blockquote>${block.quote}</blockquote>`;
@@ -254,7 +312,7 @@ export function convertStrapiArticle(strapiPost: StrapiEntity<StrapiArticle> | a
   if (!content && attributes.description) {
     content = `<p>${attributes.description}</p>`;
   }
-  
+
   return {
     id: strapiPost.id || 0,
     title: attributes.title,
