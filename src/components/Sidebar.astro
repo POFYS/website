@@ -1,7 +1,7 @@
 ---
 import { config } from '../config';
 import { getLangFromUrl, useTranslations } from '../i18n/utils';
-import { getArticles, getCategories, convertStrapiArticle } from '../utils/strapi';
+import { getArticles, getCategories, getCommuniques, convertStrapiArticle } from '../utils/strapi';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
@@ -15,7 +15,7 @@ try {
     pageSize: 5,
     locale: lang
   });
-  
+
   recentPosts = articlesResponse.data
     .map(convertStrapiArticle)
     .filter(article => article !== null);
@@ -29,6 +29,21 @@ try {
   categories = categoriesResponse.data.filter(cat => cat.slug && cat.name);
 } catch (error) {
   console.error('Failed to fetch categories for sidebar:', error);
+}
+
+let recentCommuniques: any[] = [];
+try {
+  const communiquesResponse = await getCommuniques({
+    sort: 'publishedAt:desc',
+    pageSize: 5,
+    locale: lang
+  });
+
+  recentCommuniques = communiquesResponse.data
+    .map(convertStrapiArticle)
+    .filter(communique => communique !== null);
+} catch (error) {
+  console.error('Failed to fetch recent communiques for sidebar:', error);
 }
 ---
 
@@ -97,6 +112,30 @@ try {
       </ul>
     </section>
   )}
+
+  <!-- Recent Communiques Section -->
+  {recentCommuniques.length > 0 && (
+    <section class="recent-communiques">
+      <h3 class={lang === 'ar' ? 'section-title-ar' : 'section-title'}>{t('sidebar.recentCommuniques')}</h3>
+      <ul class="post-list">
+        {recentCommuniques.map(communique => (
+          <li class="post-item">
+            <a href={lang === 'en' ? `${base}communiques/${communique.slug}` : `${base}ar/communiques/${communique.slug}`} class="post-link">
+              {communique.title}
+            </a>
+            <time class="post-date" datetime={new Date(communique.date).toISOString()}>
+              {new Date(communique.date).toLocaleDateString(lang === 'en' ? 'en-GB' : 'ar-YE', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+              })}
+            </time>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+
 </div>
 
 <style>
