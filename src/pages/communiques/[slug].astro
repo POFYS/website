@@ -1,104 +1,107 @@
 ---
-import Layout from '../../../components/Layout.astro';
-import TableOfContents from '../../../components/TableOfContents.astro';
-import { extractHeadings, filterHeadingsForTOC } from '../../../utils/table-of-contents';
-import { calculateReadingTime, extractTextFromMarkdown } from '../../../utils/reading-time';
-import { getLangFromUrl, useTranslations } from '../../../i18n/utils';
+import Layout from '../../components/Layout.astro';
+import { getCommuniques, convertStrapiCommunique } from '../../utils/strapi';
+import { calculateReadingTime } from '../../utils/reading-time';
 
 export async function getStaticPaths() {
-  const mdPostsGlob = import.meta.glob('../../../content/blog/ar/*.md', { eager: true });
-  const mdxPostsGlob = import.meta.glob('../../../content/blog/ar/*.mdx', { eager: true });
-  
-  const allPosts = [...Object.values(mdPostsGlob), ...Object.values(mdxPostsGlob)] as any[];
-  
-  return allPosts.map((post: any) => {
-    const rawContent = post.body || post.rawContent?.() || '';
-    const plainText = extractTextFromMarkdown(rawContent);
-    const readingTime = calculateReadingTime(plainText);
-    const allHeadings = extractHeadings(rawContent);
-    const tocHeadings = filterHeadingsForTOC(allHeadings);
+  try {
+    const response = await getCommuniques({ 
+      sort: 'publishedAt:desc',
+      pageSize: 100,
+      locale: 'en',
+    });
     
-    return {
-      params: { slug: post.file.split('/').pop()?.replace(/\.(md|mdx)$/, '') },
-      props: { post, readingTime, tocHeadings }
-    };
-  });
+    const communiques = response.data
+      .map((entity: any) => {
+        const converted = convertStrapiCommunique(entity);
+        return { raw: entity, converted };
+      })
+      .filter(a => a.converted !== null);
+
+    return communiques.map(({ raw, converted }: any) => {
+      const plainText = converted.content
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      const readingTime = calculateReadingTime(plainText);
+
+      // Find localization for Arabic if present
+      const localizations = raw.localizations || [];
+      const arLoc = localizations.find((l: any) => l.locale === 'ar');
+      const localizedAlternates: Record<string, string> = {};
+      if (arLoc && arLoc.slug) {
+        localizedAlternates['ar'] = `/ar/communiques/${arLoc.slug}`;
+      }
+
+      return {
+        params: { slug: converted.slug },
+        props: { communique: converted, readingTime, localizedAlternates }
+      };
+    });
+  } catch (error) {
+    console.error('Failed to fetch communiques for static paths:', error);
+    return [];
+  }
 }
 
-const { post, readingTime, tocHeadings } = Astro.props;
-const { frontmatter, Content } = post as any;
+const { communique, readingTime, localizedAlternates } = Astro.props;
 
-const lang = getLangFromUrl(Astro.url);
-const t = useTranslations(lang);
+if (!communique) {
+  return Astro.redirect('/404');
+}
 
-const pageTitle = frontmatter.title;
+const pageTitle = communique.title;
+const publishedTime = communique.date ? new Date(communique.date).toISOString() : undefined;
 const base = import.meta.env.BASE_URL;
-const publishedTime = frontmatter.date ? new Date(frontmatter.date).toISOString() : undefined;
 ---
 
 <Layout 
   title={pageTitle} 
-  description={frontmatter.description || frontmatter.excerpt}
-  type="article"
+  description={communique?.description || communique?.excerpt}
+  type="communique"
   publishedTime={publishedTime}
+  localizedAlternates={localizedAlternates}
 >
-  <article class="blog-post" dir="rtl" lang="ar">
+  <communique class="blog-post">
     <header class="post-header">
-      <h1 class="post-title">{frontmatter.title}</h1>
-      
-      <div class="post-meta">
-        <time class="post-date" datetime={frontmatter.date}>
-          {new Date(frontmatter.date).toLocaleDateString('ar-YE', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-          })}
-        </time>
+      <h1 class="post-title">{communique.title}</h1>
         
-        <span class="post-reading-time">{readingTime}</span>
-        
-        {frontmatter.categories && frontmatter.categories.length > 0 && (
-          <div class="post-categories">
-            {frontmatter.categories.map((category: string) => (
-              <a href={`${base}ar/categories/${category.toLowerCase().replace(/[\/\s]+/g, '-')}`} class="category-tag">
-                {category}
-              </a>
-            ))}
-          </div>
-        )}
-      </div>
-      
-      {frontmatter.excerpt && (
-        <p class="post-excerpt">{frontmatter.excerpt}</p>
-      )}
-      
-      <!-- Monumental Blood Red Rule -->
-      <hr class="monumental-rule" />
-    </header>
-
-    <TableOfContents headings={tocHeadings} />
-
-    <div class="post-content">
-      <Content />
-    </div>
-
-    <footer class="post-footer">
-      {frontmatter.tags && frontmatter.tags.length > 0 && (
-        <div class="post-tags">
-          <span class="tags-label">الوسوم:</span>
-          <div class="tag-list">
-            {frontmatter.tags.map((tag: string) => (
-              <span class="tag">{tag}</span>
-            ))}
-          </div>
+        <div class="post-meta">
+          <time class="post-date" datetime={communique.date.toISOString()}>
+            {new Date(communique.date).toLocaleDateString('en-GB', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })}
+          </time>
+          
+          <span class="post-reading-time">{readingTime}</span>
+          
+          {communique.categories && communique.categories.length > 0 && (
+            <div class="post-categories">
+              {communique.categories.map((category: string) => (
+                <span class="category-tag">{category}</span>
+              ))}
+            </div>
+          )}
         </div>
-      )}
-      
-      <div class="post-navigation">
-        <a href={`${base}ar/blog`} class="back-to-blog">← العودة إلى المدونة</a>
-      </div>
-    </footer>
-  </article>
+        
+        {communique.excerpt && (
+          <p class="post-excerpt">{communique.excerpt}</p>
+        )}
+        
+        <!-- Monumental Blood Red Rule -->
+        <hr class="monumental-rule" />
+      </header>
+
+      <div class="post-content" set:html={communique.content} />
+
+      <footer class="post-footer">
+        <div class="post-navigation">
+          <a href={`${base}communiques`} class="back-to-communiques">← Back to Communiques</a>
+        </div>
+      </footer>
+    </communique>
 </Layout>
 
 <style>
@@ -166,26 +169,13 @@ const publishedTime = frontmatter.date ? new Date(frontmatter.date).toISOString(
     text-transform: uppercase;
     letter-spacing: 0.05em;
     border-radius: 3px;
-    transition: background-color 0.2s ease;
   }
 
-  .category-tag:hover,
-  .category-tag:focus {
-    background-color: var(--color-accent);
-    text-decoration: none;
-  }
-
+  /* Dark mode category tag styles */
   :global([data-theme="dark"]) .category-tag {
     background-color: var(--color-surface);
     color: var(--color-text-primary);
     border: 1px solid var(--color-border);
-  }
-
-  :global([data-theme="dark"]) .category-tag:hover,
-  :global([data-theme="dark"]) .category-tag:focus {
-    background-color: var(--color-accent);
-    color: white;
-    border-color: var(--color-accent);
   }
 
   .post-excerpt {
@@ -248,8 +238,7 @@ const publishedTime = frontmatter.date ? new Date(frontmatter.date).toISOString(
   }
 
   .post-content :global(blockquote) {
-    border-right: 4px solid var(--color-accent);
-    border-left: none;
+    border-left: 4px solid var(--color-accent);
     padding: calc(var(--grid-unit) * 2) calc(var(--grid-unit) * 3);
     margin: calc(var(--grid-unit) * 4) 0;
     background-color: var(--color-surface);
@@ -278,11 +267,14 @@ const publishedTime = frontmatter.date ? new Date(frontmatter.date).toISOString(
     font-size: inherit;
   }
 
+  /* Custom Prism syntax highlighting for German flag colors */
+  /* CSS selectors like h1 - use gold */
   .post-content :global(.token.selector),
   .post-content :global(.token.tag) {
     color: #ffd700 !important;
   }
 
+  /* CSS properties and functions - use red */
   .post-content :global(.token.property),
   .post-content :global(.token.class-name),
   .post-content :global(.token.function) {
@@ -311,6 +303,7 @@ const publishedTime = frontmatter.date ? new Date(frontmatter.date).toISOString(
     color: #66d9ef !important;
   }
 
+  /* Reset default Prism styles and apply our theme */
   .post-content :global(pre[class*="language-"]) {
     background: #000000 !important;
     color: #ffffff !important;
@@ -341,8 +334,7 @@ const publishedTime = frontmatter.date ? new Date(frontmatter.date).toISOString(
   .post-content :global(ul),
   .post-content :global(ol) {
     margin-bottom: calc(var(--grid-unit) * 3);
-    padding-right: calc(var(--grid-unit) * 3);
-    padding-left: 0;
+    padding-left: calc(var(--grid-unit) * 3);
   }
 
   .post-content :global(li) {
@@ -373,39 +365,7 @@ const publishedTime = frontmatter.date ? new Date(frontmatter.date).toISOString(
     gap: calc(var(--grid-unit) * 3);
   }
 
-  .post-tags {
-    display: flex;
-    flex-direction: column;
-    gap: calc(var(--grid-unit));
-  }
-
-  .tags-label {
-    font-family: var(--font-heading-secondary);
-    font-weight: 700;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--color-text-primary);
-  }
-
-  .tag-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: calc(var(--grid-unit));
-  }
-
-  .tag {
-    background-color: var(--color-text-primary);
-    color: var(--color-surface);
-    padding: calc(var(--grid-unit) / 2) calc(var(--grid-unit));
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    border-radius: 3px;
-  }
-
-  .back-to-blog {
+  .back-to-communiques {
     font-family: var(--font-heading-secondary);
     font-weight: 700;
     text-transform: uppercase;
@@ -418,8 +378,8 @@ const publishedTime = frontmatter.date ? new Date(frontmatter.date).toISOString(
     display: inline-block;
   }
 
-  .back-to-blog:hover,
-  .back-to-blog:focus {
+  .back-to-communiques:hover,
+  .back-to-communiques:focus {
     background-color: var(--color-accent);
     color: white;
     text-decoration: none;

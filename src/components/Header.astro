@@ -60,6 +60,7 @@ function getLanguageSwitchPath(targetLang: string) {
         <ul class="nav-list">
           <li><a href={lang === 'en' ? base : `${base}ar/`} class="nav-link">{t('nav.home')}</a></li>
           <li><a href={lang === 'en' ? `${base}articles` : `${base}ar/articles`} class="nav-link">{t('nav.articles')}</a></li>
+          <li><a href={lang === 'en' ? `${base}communiques` : `${base}ar/communiques`} class="nav-link">{t('nav.communiques')}</a></li>
           <li><a href={lang === 'en' ? `${base}about` : `${base}ar/about`} class="nav-link">{t('nav.about')}</a></li>
           <li><a href={lang === 'en' ? `${base}contact` : `${base}ar/contact`} class="nav-link">{t('nav.contact')}</a></li>
         </ul>
@@ -109,6 +110,7 @@ function getLanguageSwitchPath(targetLang: string) {
   <ul class="mobile-nav-list">
     <li><a href={lang === 'en' ? base : `${base}ar/`} class="mobile-nav-link">{t('nav.home')}</a></li>
     <li><a href={lang === 'en' ? `${base}articles` : `${base}ar/articles`} class="mobile-nav-link">{t('nav.articles')}</a></li>
+    <li><a href={lang === 'en' ? `${base}communiques` : `${base}ar/communiques`} class="mobile-nav-link">{t('nav.communiques')}</a></li>
     <li><a href={lang === 'en' ? `${base}about` : `${base}ar/about`} class="mobile-nav-link">{t('nav.about')}</a></li>
     <li><a href={lang === 'en' ? `${base}contact` : `${base}ar/contact`} class="mobile-nav-link">{t('nav.contact')}</a></li>
   </ul>
@@ -649,7 +651,6 @@ function getLanguageSwitchPath(targetLang: string) {
   .lang-link:hover,
   .lang-link:focus {
     color: var(--color-accent);
-    border-bottom-color: var(--color-accent);
   }
 
   /* Hide mobile-only hamburger by default */
@@ -768,9 +769,38 @@ function getLanguageSwitchPath(targetLang: string) {
     background-color: var(--color-surface);
   }
 
-  @media (max-width: 1024px) {
+  @media (max-width: 970px) {
     .nav-list {
       gap: calc(var(--grid-unit) * 0.5);
+    }
+    .mobile-controls {
+      gap: calc(var(--grid-unit) * 1);
+    }
+  }
+
+  @media (max-width: 870px) {
+    .header-content {
+      padding: 0 calc(var(--grid-unit) * 1.5);
+      gap: calc(var(--grid-unit) * 1);
+    }
+    .title-text {
+      font-size: 1.45rem;
+    }
+
+    .nav-list {
+      gap: calc(var(--grid-unit) * 0.25);
+    }
+
+    .nav-link {
+      padding: calc(var(--grid-unit) / 2) calc(var(--grid-unit) * 0.75);
+    }
+
+    .mobile-controls {
+      gap: calc(var(--grid-unit) * 0.25);
+    }
+
+    .header-controls {
+      gap: calc(var(--grid-unit) * 1);
     }
   }
 

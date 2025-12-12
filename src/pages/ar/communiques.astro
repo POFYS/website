@@ -1,100 +1,126 @@
 ---
-import Layout from '../components/Layout.astro';
-import { config } from '../config';
-import { getLangFromUrl, useTranslations } from '../i18n/utils';
+import Layout from '../../components/Layout.astro';
+import { config } from '../../config';
+import { getCommuniques, convertStrapiCommunique } from '../../utils/strapi';
+import { getLangFromUrl, useTranslations } from '../../i18n/utils';
+import { calculateReadingTime } from '../../utils/reading-time';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const base = import.meta.env.BASE_URL;
 
-const mdPostsGlob = import.meta.glob('../content/blog/*.md', { eager: true });
-const mdxPostsGlob = import.meta.glob('../content/blog/*.mdx', { eager: true });
+let strapiCommuniques: any[] = [];
+let error: string | null = null;
 
-const allPosts = [...Object.values(mdPostsGlob), ...Object.values(mdxPostsGlob)] as any[];
-const sortedPosts = allPosts
-  .sort((a: any, b: any) => new Date(b.frontmatter.date).getTime() - new Date(a.frontmatter.date).getTime());
+try {
+  const response = await getCommuniques({ 
+    sort: 'publishedAt:desc',
+    pageSize: 100,
+    locale: lang,
+  });
+  strapiCommuniques = response.data
+    .map(convertStrapiCommunique)
+    .filter(communique => communique !== null)
+    .map(communique => {
+      const plainText = communique.content
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      const readingTime = calculateReadingTime(plainText);
+      return {
+        ...communique,
+        readingTime: readingTime
+          .replace('min read', 'دقائق قراءة')
+          .replace('Less than 1', 'أقل من 1')
+      };
+    });
+} catch (e) {
+  console.error('Failed to fetch Strapi communiques:', e);
+  error = e instanceof Error ? e.message : 'Unknown error';
+}
+
+const sortedCommuniques = strapiCommuniques.sort((a, b) => 
+  new Date(b.date).getTime() - new Date(a.date).getTime()
+);
 ---
 
-<Layout title={`${t('blog.title')} | POFYS`} description={t('site.description')}>
-  <div class="blog-page">
-    <header class="blog-header">
-      <h1 class="blog-title">{t('blog.title')}</h1>
-      <p class="blog-description">
-        {t('blog.description')}
+<Layout title={`${t('nav.communiques')} | POFYS`} description={t('site.description')}>
+  <div class="communique-page">
+    <header class="communique-header">
+      <h1 class="communique-title">{t('communiques.title')}</h1>
+      <p class="communique-description">
+        {t('communiques.description')}
       </p>
-      <p class="substack-link">
-        {t('blog.substack')} <a href={config.social.substack} target="_blank" rel="noopener noreferrer">{t('blog.substackName')}</a>
-      </p>
-      <hr class="blog-rule" />
+      <hr class="communique-rule" />
     </header>
 
-    {sortedPosts.length > 0 ? (
+    {!error && sortedCommuniques.length > 0 ? (
       <div class="posts-list">
-        {sortedPosts.map((post: any) => (
-          <article class="post-item">
+        {sortedCommuniques.map((post: any) => (
+          <communique class="post-item" lang="ar" dir="rtl">
             <h2 class="post-title">
-              <a href={`${base}blog/${post.file.split('/').pop()?.replace(/\.(md|mdx)$/, '')}`}>{post.frontmatter.title}</a>
+              <a href={`${base}ar/communiques/${post.slug}`}>{post.title}</a>
             </h2>
-            
+
             <div class="post-meta">
-              <time class="post-date" datetime={post.frontmatter.date}>
-                {new Date(post.frontmatter.date).toLocaleDateString('en-GB', {
+              <time class="post-date" datetime={post.date.toISOString()}>
+                {new Date(post.date).toLocaleDateString('ar-YE', {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric'
                 })}
               </time>
-              
-              <span class="post-reading-time">5 min read</span>
-              
-              {post.frontmatter.categories && (
+
+              <span class="post-reading-time">{post.readingTime}</span>
+
+              {post.categories && post.categories.length > 0 && (
                 <div class="post-categories">
-                  {post.frontmatter.categories.map((category: string) => (
+                  {post.categories.map((category: string) => (
                     <span class="category">{category}</span>
                   ))}
                 </div>
               )}
             </div>
-            
-            {post.frontmatter.excerpt && (
-              <p class="post-excerpt">{post.frontmatter.excerpt}</p>
+
+            {post.excerpt && (
+              <p class="post-excerpt">{post.excerpt}</p>
             )}
-            
-            <a href={`${base}blog/${post.file.split('/').pop()?.replace(/\.(md|mdx)$/, '')}`} class="read-more">{t('blog.readMore')}</a>
-          </article>
+
+            <a href={`${base}ar/communiques/${post.slug}`} class="read-more">{t('communiques.readMore')}</a>
+          </communique>
         ))}
       </div>
-    ) : (
+    ) : !error && (
       <div class="no-posts">
-        <p>No posts available yet. Start writing by creating files in <code>src/pages/blog/</code></p>
+        <p>لا توجد مقالات متاحة بعد.</p>
       </div>
     )}
   </div>
 </Layout>
 
 <style>
-  .blog-page {
+  .communique-page {
     max-width: 800px;
     margin: 0 auto;
   }
 
-  .blog-header {
+  .communique-header {
     text-align: center;
     margin-bottom: calc(var(--grid-unit) * 8);
   }
 
-  .blog-title {
-    font-family: var(--font-heading-primary);
+  .communique-title {
+    font-family: var(--font-arabic) !important;
     font-size: 3.5rem;
     font-weight: 900;
     color: var(--color-accent);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0;
     line-height: 1.1;
     margin-bottom: calc(var(--grid-unit) * 3);
   }
 
-  .blog-description {
+  .communique-description {
     font-size: 1.25rem;
     line-height: 1.6;
     color: var(--color-text-secondary);
@@ -127,8 +153,7 @@ const sortedPosts = allPosts
     text-decoration: underline;
   }
 
-
-  .blog-rule {
+  .communique-rule {
     height: 4px;
     background-color: var(--color-accent);
     border: none;
@@ -145,6 +170,7 @@ const sortedPosts = allPosts
   .post-item {
     border-bottom: 1px solid var(--color-border);
     padding-bottom: calc(var(--grid-unit) * 4);
+    letter-spacing: 0;
   }
 
   .post-item:last-child {
@@ -157,6 +183,8 @@ const sortedPosts = allPosts
     font-size: 2rem;
     font-weight: 700;
     margin-bottom: calc(var(--grid-unit) * 2);
+    letter-spacing: 0;
+    word-spacing: 4px;
   }
 
   .post-title a {
@@ -182,7 +210,7 @@ const sortedPosts = allPosts
     font-size: 0.9rem;
     color: var(--color-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0;
   }
 
   .post-reading-time {
@@ -190,7 +218,7 @@ const sortedPosts = allPosts
     font-size: 0.9rem;
     color: var(--color-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0;
   }
 
   .post-reading-time::before {
@@ -212,7 +240,7 @@ const sortedPosts = allPosts
     font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0;
     border-radius: 2px;
   }
 
@@ -234,7 +262,7 @@ const sortedPosts = allPosts
     font-family: var(--font-heading-secondary);
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0;
     color: var(--color-accent);
     text-decoration: none;
     font-size: 0.9rem;
@@ -260,12 +288,22 @@ const sortedPosts = allPosts
     font-family: var(--font-mono);
   }
 
+  .no-posts a {
+    color: var(--color-accent);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .no-posts a:hover {
+    text-decoration: underline;
+  }
+
   @media (max-width: 768px) {
-    .blog-title {
+    .communique-title {
       font-size: 2.5rem;
     }
 
-    .blog-description {
+    .communique-description {
       font-size: 1.125rem;
     }
 
