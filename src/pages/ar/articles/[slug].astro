@@ -62,7 +62,7 @@ const base = import.meta.env.BASE_URL;
   publishedTime={publishedTime}
   localizedAlternates={localizedAlternates}
 >
-  <article class="blog-post">
+  <article class="blog-post" lang="ar" dir="rtl">
     <header class="post-header">
       <h1 class="post-title">{article.title}</h1>
         
@@ -96,7 +96,7 @@ const base = import.meta.env.BASE_URL;
         <hr class="monumental-rule" />
       </header>
 
-      <div class="post-content" set:html={article.content} />
+      <div class="post-content"  lang="ar" dir="rtl" set:html={article.content} />
 
       <footer class="post-footer">
         <div class="post-navigation">
@@ -122,7 +122,8 @@ const base = import.meta.env.BASE_URL;
     font-weight: 900;
     color: var(--color-accent);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0;
+    word-spacing: 4px;
     line-height: 1.1;
     margin-bottom: calc(var(--grid-unit) * 3);
   }
@@ -334,10 +335,11 @@ const base = import.meta.env.BASE_URL;
   }
 
   .back-to-articles {
-    font-family: var(--font-heading-secondary);
+    font-family: var(--font-arabic);
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0;
+    word-spacing: 4px;
     color: var(--color-accent);
     padding: calc(var(--grid-unit)) calc(var(--grid-unit) * 2);
     border: 2px solid var(--color-accent);

@@ -62,7 +62,7 @@ try {
   <!-- Recent Posts Section -->
   {recentPosts.length > 0 && (
     <section class="recent-posts">
-      <h3 class="section-title">{t('sidebar.recentPosts')}</h3>
+      <h3 class={lang === 'ar' ? 'section-title-ar' : 'section-title'}>{t('sidebar.recentPosts')}</h3>
       <ul class="post-list">
         {recentPosts.map(post => (
           <li class="post-item">
@@ -85,7 +85,7 @@ try {
   <!-- Categories Section -->
   {categories.length > 0 && (
     <section class="categories">
-      <h3 class="section-title">{t('sidebar.categories')}</h3>
+      <h3 class={lang === 'ar' ? 'section-title-ar' : 'section-title'}>{t('sidebar.categories')}</h3>
       <ul class="category-list">
         {categories.map(category => (
           <li class="category-item">
@@ -169,6 +169,12 @@ try {
     letter-spacing: 0.05em;
     border-bottom: 2px solid var(--color-accent);
     padding-bottom: calc(var(--grid-unit) / 2);
+  }
+
+  .section-title-ar {
+    font-family: var(--font-arabic);
+    letter-spacing: 0;
+    word-spacing: 4px;
   }
 
   .post-list {

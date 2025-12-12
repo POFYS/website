@@ -333,10 +333,11 @@ function getLanguageSwitchPath(targetLang: string) {
 
   .title-text {
     font-family: var(--font-heading-primary);
-    font-size: 1.5rem;
+    font-size: 1.55rem;
     font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0;
+    word-spacing: 4px;
     color: var(--color-text-primary);
     text-decoration: none;
     padding: calc(var(--grid-unit) / 2) calc(var(--grid-unit));
@@ -586,7 +587,8 @@ function getLanguageSwitchPath(targetLang: string) {
     font-family: var(--font-heading-secondary);
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0;
+    word-spacing: 4px;
     color: var(--color-text-primary);
     padding: calc(var(--grid-unit) / 2) calc(var(--grid-unit));
     border-bottom: 2px solid transparent;
@@ -632,7 +634,7 @@ function getLanguageSwitchPath(targetLang: string) {
   }
 
   .lang-link {
-    font-family: var(--font-heading-secondary);
+    font-family: var(--font-heading-secondary) !important;
     font-size: 1.1rem;
     font-weight: 700;
     text-transform: uppercase;

@@ -9,7 +9,7 @@ const { title, author, social } = config;
 ---
 
 <Layout title={`${t('about.title')} | ${title}`} description={t('site.description')}>
-  <div class="about-page" dir="rtl" lang="ar">
+  <div class="about-page">
     <header class="page-header">
       <h1 class="page-title">{t('about.title')}</h1>
       <hr class="page-rule" />
@@ -71,7 +71,7 @@ const { title, author, social } = config;
       </div>
     </div>
 
-    <div class="content-section">
+    <div class="content-section" lang="ar" dir="rtl">
       <h2>{t('about.pofys')}</h2>
       <p>
         المنظمة الشعبية للاشتراكيين اليمنيين الأحرار (POFYS) هي حركة سياسية شعبية مكرسة لمحاربة الفساد والدفاع عن سيادة اليمن 
@@ -109,12 +109,13 @@ const { title, author, social } = config;
   }
 
   .page-title {
-    font-family: var(--font-heading-primary);
+    font-family: var(--font-arabic) !important;
     font-size: 3.5rem;
     font-weight: 700;
     color: var(--color-accent);
     text-transform: uppercase;
-    letter-spacing: 0.15em;
+    letter-spacing: 0;
+    word-spacing: 4px;
     line-height: 1.1;
     margin-bottom: calc(var(--grid-unit) * 4);
   }
@@ -224,7 +225,8 @@ const { title, author, social } = config;
     font-weight: 700;
     color: var(--color-accent);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0;
+    word-spacing: 4px;
     margin-top: calc(var(--grid-unit) * 6);
     margin-bottom: calc(var(--grid-unit) * 3);
   }

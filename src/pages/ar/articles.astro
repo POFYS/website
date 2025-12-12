@@ -60,7 +60,7 @@ const sortedArticles = strapiArticles.sort((a, b) =>
     {!error && sortedArticles.length > 0 ? (
       <div class="posts-list">
         {sortedArticles.map((post: any) => (
-          <article class="post-item">
+          <article class="post-item" lang="ar" dir="rtl">
             <h2 class="post-title">
               <a href={`${base}ar/articles/${post.slug}`}>{post.title}</a>
             </h2>
@@ -113,12 +113,12 @@ const sortedArticles = strapiArticles.sort((a, b) =>
   }
 
   .article-title {
-    font-family: var(--font-heading-primary);
+    font-family: var(--font-arabic) !important;
     font-size: 3.5rem;
     font-weight: 900;
     color: var(--color-accent);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0;
     line-height: 1.1;
     margin-bottom: calc(var(--grid-unit) * 3);
   }
@@ -173,6 +173,7 @@ const sortedArticles = strapiArticles.sort((a, b) =>
   .post-item {
     border-bottom: 1px solid var(--color-border);
     padding-bottom: calc(var(--grid-unit) * 4);
+    letter-spacing: 0;
   }
 
   .post-item:last-child {
@@ -185,6 +186,8 @@ const sortedArticles = strapiArticles.sort((a, b) =>
     font-size: 2rem;
     font-weight: 700;
     margin-bottom: calc(var(--grid-unit) * 2);
+    letter-spacing: 0;
+    word-spacing: 4px;
   }
 
   .post-title a {
@@ -210,7 +213,7 @@ const sortedArticles = strapiArticles.sort((a, b) =>
     font-size: 0.9rem;
     color: var(--color-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0;
   }
 
   .post-reading-time {
@@ -218,7 +221,7 @@ const sortedArticles = strapiArticles.sort((a, b) =>
     font-size: 0.9rem;
     color: var(--color-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0;
   }
 
   .post-reading-time::before {
@@ -240,7 +243,7 @@ const sortedArticles = strapiArticles.sort((a, b) =>
     font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0;
     border-radius: 2px;
   }
 
@@ -262,7 +265,7 @@ const sortedArticles = strapiArticles.sort((a, b) =>
     font-family: var(--font-heading-secondary);
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0;
     color: var(--color-accent);
     text-decoration: none;
     font-size: 0.9rem;

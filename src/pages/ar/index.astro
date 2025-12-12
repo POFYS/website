@@ -62,7 +62,7 @@ try {
         
         {sortedPosts.length > 0 && (
           <div>
-            <h3 style="text-align: center; font-family: var(--font-heading-secondary); font-size: 1.75rem; margin-bottom: calc(var(--grid-unit) * 4); color: var(--color-text-primary);">أحدث المقالات</h3>
+            <h3 style="text-align: center; font-family: var(--font-arabic); font-size: 1.75rem; margin-bottom: calc(var(--grid-unit) * 4); color: var(--color-text-primary); letter-spacing: 0; word-spacing: 4px;">أحدث المقالات</h3>
             <div class="demo-posts">
               {sortedPosts.map(post => (
                 <article class="demo-post-card">
@@ -101,7 +101,7 @@ try {
         )}
         
         <div class="demo-actions">
-          <a href={`${import.meta.env.BASE_URL}ar/blog`} class="btn btn-primary">اقرأ جميع المقالات</a>
+          <a href={`${import.meta.env.BASE_URL}ar/articles`} class="btn btn-primary">اقرأ جميع المقالات</a>
         </div>
       </div>
     </section>
@@ -250,7 +250,8 @@ try {
     font-weight: 700;
     color: var(--color-accent);
     text-transform: uppercase;
-    letter-spacing: 0.15em;
+    letter-spacing: 0;
+    word-spacing: 20px;
     line-height: 0.9;
     margin-bottom: calc(var(--grid-unit) * 2);
   }
@@ -291,16 +292,17 @@ try {
   }
 
   .btn {
-    font-family: var(--font-heading-secondary);
+    font-family: var(--font-arabic);
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: calc(var(--grid-unit) * 1.5) calc(var(--grid-unit) * 3);
+    letter-spacing: 0;
+    word-spacing: 4px;
+    padding: calc(var(--grid-unit) * 1.2) calc(var(--grid-unit) * 3);
     border-radius: 4px;
     transition: all 0.3s ease;
     text-decoration: none;
     display: inline-block;
-    font-size: 0.95rem;
+    font-size: 1.1rem;
   }
 
   .btn-primary {
@@ -364,7 +366,8 @@ try {
     font-weight: 900;
     color: var(--color-accent);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0;
+    word-spacing: 4px;
     margin-bottom: calc(var(--grid-unit) * 6);
     text-align: center;
   }
@@ -395,7 +398,8 @@ try {
     font-weight: 700;
     color: var(--color-accent);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0;
+    word-spacing: 4px;
     margin-bottom: calc(var(--grid-unit) * 1.5);
   }
 
@@ -455,10 +459,12 @@ try {
   }
 
   .demo-post-title {
-    font-family: var(--font-heading-secondary);
+    font-family: var(--font-arabic);
     font-size: 1.5rem;
     font-weight: 700;
     margin-bottom: calc(var(--grid-unit));
+    letter-spacing: 0;
+    word-spacing: 4px;
   }
 
   .demo-post-title a {
@@ -484,7 +490,8 @@ try {
     font-size: 0.85rem;
     color: var(--color-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0;
+    word-spacing: 4px;
   }
 
   .demo-post-reading-time {
@@ -492,7 +499,8 @@ try {
     font-size: 0.85rem;
     color: var(--color-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0;
+    word-spacing: 4px;
   }
 
   .demo-post-reading-time::before {
@@ -520,7 +528,8 @@ try {
     font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0;
+    word-spacing: 4px;
     border-radius: 2px;
   }
 
@@ -570,7 +579,8 @@ try {
     font-weight: 700;
     color: var(--color-text-primary);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0;
+    word-spacing: 4px;
     margin-bottom: calc(var(--grid-unit));
   }
 
@@ -599,7 +609,8 @@ try {
     font-weight: 700;
     color: var(--color-accent);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0;
+    word-spacing: 4px;
     margin-bottom: calc(var(--grid-unit) * 2);
   }
 
