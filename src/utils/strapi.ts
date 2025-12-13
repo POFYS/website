@@ -216,9 +216,18 @@ export function convertStrapiArticle(strapiPost: StrapiEntity<StrapiArticle> | a
     return null;
   }
 
-  const authorName = attributes.author?.data?.attributes?.name;
+  const getRelName = (rel: any) =>
+    rel?.data?.attributes?.name || rel?.attributes?.name || rel?.data?.name || rel?.name || null;
 
-  const categoryName = attributes.category?.data?.attributes?.name;
+  const getFileUrl = (file: any) =>
+    file?.data?.attributes?.url || file?.attributes?.url || file?.url || null;
+
+  const authorName = getRelName(attributes.author);
+
+  const categoryName = getRelName(attributes.category);
+  const getRelSlug = (rel: any) =>
+    rel?.data?.attributes?.slug || rel?.attributes?.slug || rel?.data?.slug || rel?.slug || null;
+  const categorySlug = getRelSlug(attributes.category);
 
   let content = '';
   if (attributes.blocks && Array.isArray(attributes.blocks)) {
@@ -236,12 +245,14 @@ export function convertStrapiArticle(strapiPost: StrapiEntity<StrapiArticle> | a
       if (block.__component === 'shared.quote' && block.quote) {
         return `<blockquote>${block.quote}</blockquote>`;
       }
-      if (block.__component === 'shared.media' && block.file) {
-        const fileUrl = block.file?.data?.attributes?.url;
-        if (fileUrl) {
-          return `<img src="${STRAPI_URL}${fileUrl}" alt="${block.file.data.attributes.alternativeText || ''}" />`;
+        if (block.__component === 'shared.media' && block.file) {
+          const fileUrl = getFileUrl(block.file);
+          const alt = block.file?.data?.attributes?.alternativeText || block.file?.attributes?.alternativeText || '';
+          if (fileUrl) {
+            const fullUrl = fileUrl.startsWith('/') ? `${STRAPI_URL}${fileUrl}` : fileUrl;
+            return `<img src="${fullUrl}" alt="${alt}" />`;
+          }
         }
-      }
       return '';
     }).join('\n');
   }
@@ -260,10 +271,13 @@ export function convertStrapiArticle(strapiPost: StrapiEntity<StrapiArticle> | a
     author: authorName,
     excerpt: attributes.description || '',
     categories: categoryName ? [categoryName] : [],
+    category: categoryName ? { name: categoryName, slug: categorySlug || undefined } : undefined,
     tags: [],
-    image: attributes.cover?.data?.attributes?.url 
-      ? `${STRAPI_URL}${attributes.cover.data.attributes.url}`
-      : undefined,
+    image: (() => {
+      const url = getFileUrl(attributes.cover);
+      if (url) return url.startsWith('/') ? `${STRAPI_URL}${url}` : url;
+      return undefined;
+    })(),
     locale: attributes.locale || 'en',
   };
 }
@@ -281,9 +295,18 @@ export function convertStrapiCommunique(strapiPost: StrapiEntity<StrapiArticle> 
     return null;
   }
 
-  const authorName = attributes.author?.data?.attributes?.name;
+  const getRelName = (rel: any) =>
+    rel?.data?.attributes?.name || rel?.attributes?.name || rel?.data?.name || rel?.name || null;
 
-  const categoryName = attributes.category?.data?.attributes?.name;
+  const getFileUrl = (file: any) =>
+    file?.data?.attributes?.url || file?.attributes?.url || file?.url || null;
+
+  const authorName = getRelName(attributes.author);
+
+  const categoryName = getRelName(attributes.category);
+  const getRelSlug = (rel: any) =>
+    rel?.data?.attributes?.slug || rel?.attributes?.slug || rel?.data?.slug || rel?.slug || null;
+  const categorySlug = getRelSlug(attributes.category);
 
   let content = '';
   if (attributes.blocks && Array.isArray(attributes.blocks)) {
@@ -300,9 +323,11 @@ export function convertStrapiCommunique(strapiPost: StrapiEntity<StrapiArticle> 
         return `<blockquote>${block.quote}</blockquote>`;
       }
       if (block.__component === 'shared.media' && block.file) {
-        const fileUrl = block.file?.data?.attributes?.url;
+        const fileUrl = getFileUrl(block.file);
+        const alt = block.file?.data?.attributes?.alternativeText || block.file?.attributes?.alternativeText || '';
         if (fileUrl) {
-          return `<img src="${STRAPI_URL}${fileUrl}" alt="${block.file.data.attributes.alternativeText || ''}" />`;
+          const fullUrl = fileUrl.startsWith('/') ? `${STRAPI_URL}${fileUrl}` : fileUrl;
+          return `<img src="${fullUrl}" alt="${alt}" />`;
         }
       }
       return '';
@@ -323,10 +348,13 @@ export function convertStrapiCommunique(strapiPost: StrapiEntity<StrapiArticle> 
     author: authorName,
     excerpt: attributes.description || '',
     categories: categoryName ? [categoryName] : [],
+    category: categoryName ? { name: categoryName, slug: categorySlug || undefined } : undefined,
     tags: [],
-    image: attributes.cover?.data?.attributes?.url 
-      ? `${STRAPI_URL}${attributes.cover.data.attributes.url}`
-      : undefined,
+    image: (() => {
+      const url = getFileUrl(attributes.cover);
+      if (url) return url.startsWith('/') ? `${STRAPI_URL}${url}` : url;
+      return undefined;
+    })(),
     locale: attributes.locale || 'en',
   };
 }

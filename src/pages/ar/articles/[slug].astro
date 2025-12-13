@@ -67,27 +67,37 @@ const base = import.meta.env.BASE_URL;
       <h1 class="post-title">{article.title}</h1>
         
         <div class="post-meta">
-          <time class="post-date" datetime={article.date.toISOString()}>
-            {new Date(article.date).toLocaleDateString('ar-YE', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            })}
-          </time>
-          
-          <span class="post-reading-time">
-            {readingTime.replace('min read', 'دقائق قراءة').replace('Less than 1', 'أقل من 1')}
-          </span>
-          
-          {article.categories && article.categories.length > 0 && (
-            <div class="post-categories">
-              {article.categories.map((category: string) => (
-                <span class="category-tag">{category}</span>
-              ))}
-            </div>
-          )}
+          <div class="meta-left">
+            {article.date && (
+              <time class="post-date" datetime={publishedTime}>
+                {new Date(article.date).toLocaleDateString('ar-YE', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </time>
+            )}
+
+            {article.author && (
+              <span class="post-author">{article.author}</span>
+            )}
+          </div>
+
+          <div class="meta-right">
+            {readingTime && (
+              <span class="post-reading-time">
+                {readingTime.replace('min read', 'دقائق قراءة').replace('Less than 1', 'أقل من 1')}
+              </span>
+            )}
+
+            {article.category?.slug && article.category?.name && (
+              <div class="post-categories">
+                <a href={`/articles/category/${article.category.slug}`} class="category-tag">{article.category.name}</a>
+              </div>
+            )}
+          </div>
         </div>
-        
+
         {article.excerpt && (
           <p class="post-excerpt">{article.excerpt}</p>
         )}
@@ -130,9 +140,19 @@ const base = import.meta.env.BASE_URL;
 
   .post-meta {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
     gap: calc(var(--grid-unit) * 1.5);
     margin-bottom: calc(var(--grid-unit) * 3);
+    flex-wrap: wrap;
+  }
+
+  .meta-left,
+  .meta-right {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--grid-unit));
   }
 
   .post-date {
@@ -140,7 +160,23 @@ const base = import.meta.env.BASE_URL;
     font-size: 0.9rem;
     color: var(--color-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0;
+    word-spacing: 4px;
+  }
+
+  .post-author {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0;
+    word-spacing: 4px;
+  }
+
+  .post-author::before {
+    content: "•";
+    margin: 0 calc(var(--grid-unit));
+    color: var(--color-border);
   }
 
   .post-reading-time {
@@ -148,10 +184,11 @@ const base = import.meta.env.BASE_URL;
     font-size: 0.9rem;
     color: var(--color-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0;
+    word-spacing: 4px;
   }
 
-  .post-reading-time::before {
+  .post-reading-time::after {
     content: "•";
     margin: 0 calc(var(--grid-unit));
     color: var(--color-border);
@@ -170,8 +207,16 @@ const base = import.meta.env.BASE_URL;
     font-size: 0.8rem;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0;
+    word-spacing: 4px;
     border-radius: 3px;
+    transition: background-color 0.2s ease;
+  }
+
+  .category-tag:hover,
+  .category-tag:focus {
+    background-color: var(--color-accent);
+    text-decoration: none;
   }
 
   /* Dark mode category tag styles */
@@ -179,6 +224,13 @@ const base = import.meta.env.BASE_URL;
     background-color: var(--color-surface);
     color: var(--color-text-primary);
     border: 1px solid var(--color-border);
+  }
+
+  :global([data-theme="dark"]) .category-tag:hover,
+  :global([data-theme="dark"]) .category-tag:focus {
+    background-color: var(--color-accent);
+    color: white;
+    border-color: var(--color-accent);
   }
 
   .post-excerpt {
@@ -209,7 +261,8 @@ const base = import.meta.env.BASE_URL;
     font-weight: 700;
     color: var(--color-text-primary);
     text-transform: uppercase;
-    letter-spacing: 0.15em;
+    letter-spacing: 0;
+    word-spacing: 4px;
     margin-top: calc(var(--grid-unit) * 6);
     margin-bottom: calc(var(--grid-unit) * 3);
   }
@@ -220,7 +273,8 @@ const base = import.meta.env.BASE_URL;
     font-weight: 700;
     color: var(--color-text-primary);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0;
+    word-spacing: 4px;
     margin-top: calc(var(--grid-unit) * 6);
     margin-bottom: calc(var(--grid-unit) * 3);
   }
@@ -231,7 +285,8 @@ const base = import.meta.env.BASE_URL;
     font-weight: 600;
     color: var(--color-text-primary);
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0;
+    word-spacing: 4px;
     margin-top: calc(var(--grid-unit) * 4);
     margin-bottom: calc(var(--grid-unit) * 2);
   }
@@ -363,6 +418,11 @@ const base = import.meta.env.BASE_URL;
     .post-meta {
       flex-direction: column;
       align-items: flex-start;
+      gap: calc(var(--grid-unit) * 1.5);
+    }
+
+    .meta-right {
+      margin-top: calc(var(--grid-unit));
     }
 
     .post-content {

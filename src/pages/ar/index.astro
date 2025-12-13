@@ -23,9 +23,12 @@ try {
         .replace(/<[^>]*>/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
+      const rt = calculateReadingTime(plainText);
       return {
         ...article,
-        readingTime: calculateReadingTime(plainText)
+        readingTime: rt
+          .replace('min read', 'دقائق قراءة')
+          .replace('Less than 1', 'أقل من 1')
       };
     });
 } catch (error) {
@@ -70,30 +73,40 @@ try {
                     <a href={`${import.meta.env.BASE_URL}ar/articles/${post.slug}`}>{post.title}</a>
                   </h3>
                   
-                  <div class="demo-post-meta">
-                    <time class="demo-post-date" datetime={new Date(post.date).toISOString()}>
-                      {new Date(post.date).toLocaleDateString('ar-YE', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
-                    </time>
-                    {post.readingTime && (
-                      <span class="demo-post-reading-time">{post.readingTime}</span>
-                    )}
-                  </div>
+                        <div class="demo-post-meta">
+                          <div class="meta-left">
+                            {post.date && (
+                              <time class="demo-post-date" datetime={new Date(post.date).toISOString()}>
+                                {new Date(post.date).toLocaleDateString('ar-YE', {
+                                  year: 'numeric',
+                                  month: 'long',
+                                  day: 'numeric'
+                                })}
+                              </time>
+                            )}
+
+                            {post.author && (
+                              <span class="post-author">بقلم {post.author}</span>
+                            )}
+                          </div>
+
+                          <div class="meta-right">
+                            {post.readingTime && (
+                              <span class="demo-post-reading-time">{post.readingTime}</span>
+                            )}
+
+                            {post.category?.slug && post.category?.name && (
+                              <div class="demo-post-categories">
+                                <a href={`${import.meta.env.BASE_URL}ar/categories/${post.category.slug}`} class="demo-category">{post.category.name}</a>
+                              </div>
+                            )}
+                          </div>
+                        </div>
                   
                   {post.excerpt && (
                     <p class="demo-post-excerpt">{post.excerpt}</p>
                   )}
                   
-                  {post.categories && post.categories.length > 0 && (
-                    <div class="demo-post-categories">
-                      {post.categories.map((category: any) => (
-                        <span class="demo-category">{category.name}</span>
-                      ))}
-                    </div>
-                  )}
                 </article>
               ))}
             </div>
@@ -479,10 +492,19 @@ try {
 
   .demo-post-meta {
     display: flex;
+    flex-direction: row;
+    justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
     gap: calc(var(--grid-unit));
     margin-bottom: calc(var(--grid-unit) * 1.5);
+  }
+
+  .meta-left,
+  .meta-right {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--grid-unit));
   }
 
   .demo-post-date {
@@ -503,11 +525,26 @@ try {
     word-spacing: 4px;
   }
 
-  .demo-post-reading-time::before {
+  .demo-post-reading-time::after {
     content: "•";
     margin: 0 calc(var(--grid-unit) / 2);
     color: var(--color-border);
   }
+
+  .post-author {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .post-author::before {
+    content: "•";
+    margin: 0 calc(var(--grid-unit) / 2);
+    color: var(--color-border);
+  }
+
 
   .demo-post-excerpt {
     color: var(--color-text-secondary);
@@ -531,12 +568,27 @@ try {
     letter-spacing: 0;
     word-spacing: 4px;
     border-radius: 2px;
+    transition: background-color 0.2s ease;
   }
 
+  .demo-category:hover,
+  .demo-category:focus {
+    background-color: var(--color-accent);
+    text-decoration: none;
+  }
+
+  /* Dark mode demo category styles */
   :global([data-theme="dark"]) .demo-category {
     background-color: var(--color-surface);
     color: var(--color-text-primary);
     border: 1px solid var(--color-border);
+  }
+
+  :global([data-theme="dark"]) .demo-category:hover,
+  :global([data-theme="dark"]) .demo-category:focus {
+    background-color: var(--color-accent);
+    color: white;
+    border-color: var(--color-accent);
   }
 
   .demo-actions {
