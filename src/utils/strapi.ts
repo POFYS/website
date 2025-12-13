@@ -2,6 +2,7 @@ import type {
   StrapiEntity,
   StrapiArticle,
   StrapiCategory,
+  StrapiCommunique,
 } from '../types/strapi';
 import { marked } from 'marked';
 
@@ -197,7 +198,7 @@ export async function getCommuniques(params?: {
     query['filters[locale][$eq]'] = params.locale;
   }
 
-  return fetchApi<{ data: StrapiEntity<StrapiArticle>[] }>({
+  return fetchApi<{ data: StrapiEntity<StrapiCommunique>[] }>({
     endpoint: 'communiques',
     query,
   });
@@ -334,6 +335,32 @@ export function convertStrapiCommunique(strapiPost: StrapiEntity<StrapiArticle> 
     }).join('\n');
   }
 
+  let portableBlocksHtml = '';
+  if (attributes.blocks && Array.isArray(attributes.blocks) && attributes.blocks.length > 0 && attributes.blocks[0].type) {
+    const escapeHtml = (str: string) =>
+      String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+
+    portableBlocksHtml = attributes.blocks
+      .map((blk: any) => {
+        if (blk.type === 'paragraph' && Array.isArray(blk.children)) {
+          const text = blk.children.map((c: any) => c.text || '').join('');
+          return `<p>${escapeHtml(text)}</p>`;
+        }
+        if (/^h[1-6]$/.test(blk.type) && Array.isArray(blk.children)) {
+          const text = blk.children.map((c: any) => c.text || '').join('');
+          return `<${blk.type}>${escapeHtml(text)}</${blk.type}>`;
+        }
+        return '';
+      })
+      .filter(Boolean)
+      .join('\n');
+  }
+
   if (!content && attributes.description) {
     content = `<p>${attributes.description}</p>`;
   }
@@ -343,6 +370,7 @@ export function convertStrapiCommunique(strapiPost: StrapiEntity<StrapiArticle> 
     title: attributes.title,
     description: attributes.description || '',
     content: content,
+    rich_text: portableBlocksHtml || content,
     slug: attributes.slug || attributes.title?.toLowerCase().replace(/\s+/g, '-'),
     date: new Date(attributes.publishedAt || attributes.createdAt || new Date()),
     author: authorName,

@@ -88,6 +88,16 @@ export interface StrapiArticle {
   locale?: string;
 }
 
+export interface StrapiCommunique {
+  title: string;
+  slug: string;
+  rich_text: string;
+  publishedAt: string;
+  createdAt: string;
+  updatedAt: string;
+  locale?: string;
+}
+
 export interface StrapiQueryParams {
   page?: number;
   pageSize?: number;
