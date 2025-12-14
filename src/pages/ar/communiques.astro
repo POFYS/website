@@ -57,29 +57,39 @@ const sortedCommuniques = strapiCommuniques.sort((a, b) =>
     {!error && sortedCommuniques.length > 0 ? (
       <div class="posts-list">
         {sortedCommuniques.map((post: any) => (
-          <communique class="post-item" lang="ar" dir="rtl">
+          <article class="post-item" lang="ar" dir="rtl">
             <h2 class="post-title">
               <a href={`${base}ar/communiques/${post.slug}`}>{post.title}</a>
             </h2>
 
             <div class="post-meta">
-              <time class="post-date" datetime={post.date.toISOString()}>
-                {new Date(post.date).toLocaleDateString('ar-YE', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                })}
-              </time>
+              <div class="meta-left">
+                <time class="post-date" datetime={new Date(post.date).toISOString()}>
+                  {new Date(post.date).toLocaleDateString('ar-YE', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </time>
+              </div>
 
-              <span class="post-reading-time">{post.readingTime}</span>
+              <div class="meta-right">
+                {post.readingTime && (
+                  <span class="post-reading-time">{post.readingTime}</span>
+                )}
 
-              {post.categories && post.categories.length > 0 && (
-                <div class="post-categories">
-                  {post.categories.map((category: string) => (
-                    <span class="category">{category}</span>
-                  ))}
-                </div>
-              )}
+                {post.categories && post.categories.length > 0 && (
+                  <div class="post-categories">
+                    {post.categories.map((category: any) => (
+                      typeof category === 'string' ? (
+                        <span class="category">{category}</span>
+                      ) : (
+                        <a href={`${base}ar/communiques/category/${category.slug}`} class="category">{category.name}</a>
+                      )
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             {post.excerpt && (
@@ -87,7 +97,7 @@ const sortedCommuniques = strapiCommuniques.sort((a, b) =>
             )}
 
             <a href={`${base}ar/communiques/${post.slug}`} class="read-more">{t('communiques.readMore')}</a>
-          </communique>
+          </article>
         ))}
       </div>
     ) : !error && (
@@ -200,9 +210,19 @@ const sortedCommuniques = strapiCommuniques.sort((a, b) =>
 
   .post-meta {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
     gap: calc(var(--grid-unit));
     margin-bottom: calc(var(--grid-unit) * 2);
+    flex-wrap: wrap;
+  }
+
+  .meta-left,
+  .meta-right {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--grid-unit));
   }
 
   .post-date {
@@ -219,12 +239,6 @@ const sortedCommuniques = strapiCommuniques.sort((a, b) =>
     color: var(--color-text-muted);
     text-transform: uppercase;
     letter-spacing: 0;
-  }
-
-  .post-reading-time::before {
-    content: "•";
-    margin: 0 calc(var(--grid-unit));
-    color: var(--color-border);
   }
 
   .post-categories {
