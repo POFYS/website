@@ -19,6 +19,4 @@ RUN echo '#!/bin/sh' > /entrypoint.sh && \
 
 RUN apk add --no-cache su-exec
 
-EXPOSE 9050
-
 ENTRYPOINT ["/entrypoint.sh"]
