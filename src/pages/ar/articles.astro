@@ -22,7 +22,7 @@ try {
     .map(convertStrapiArticle)
     .filter(article => article !== null)
     .map(article => {
-      const plainText = article.content
+      const plainText = article.body
         .replace(/<[^>]*>/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();

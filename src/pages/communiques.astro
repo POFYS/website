@@ -23,7 +23,7 @@ try {
     .filter(communique => communique !== null)
     .map(communique => {
       // Calculate reading time for each communique
-      const plainText = communique.content
+      const plainText = communique.body
         .replace(/<[^>]*>/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();

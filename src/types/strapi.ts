@@ -69,6 +69,7 @@ export interface StrapiArticle {
   title: string;
   slug: string;
   description?: string;
+  body?: string;
   cover?: {
     data?: StrapiImage;
   };
@@ -91,7 +92,8 @@ export interface StrapiArticle {
 export interface StrapiCommunique {
   title: string;
   slug: string;
-  rich_text: string;
+  body?: string;
+  // content?: string;
   publishedAt: string;
   createdAt: string;
   updatedAt: string;

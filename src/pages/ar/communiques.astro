@@ -22,7 +22,7 @@ try {
     .map(convertStrapiCommunique)
     .filter(communique => communique !== null)
     .map(communique => {
-      const plainText = communique.content
+      const plainText = communique.body
         .replace(/<[^>]*>/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();

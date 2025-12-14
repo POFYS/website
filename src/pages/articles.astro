@@ -23,7 +23,7 @@ try {
     .filter(article => article !== null)
     .map(article => {
       // Calculate reading time for each article
-      const plainText = article.content
+      const plainText = article.body
         .replace(/<[^>]*>/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();

@@ -19,14 +19,14 @@ export async function getStaticPaths() {
       .filter(a => a.converted !== null);
 
     return articles.map(({ raw, converted }: any) => {
-      const plainText = converted.content
+      const plainText = converted.body
         .replace(/<[^>]*>/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
       const readingTime = calculateReadingTime(plainText);
 
       // Find localization for English if present
-      const localizations = raw.attributes?.localizations || raw.localizations || [];
+      const localizations = raw.localizations || [];
       const enLoc = localizations.find((l: any) => l.locale === 'en');
       const localizedAlternates: Record<string, string> = {};
       if (enLoc && enLoc.slug) {
@@ -106,7 +106,7 @@ const base = import.meta.env.BASE_URL;
         <hr class="monumental-rule" />
       </header>
 
-      <div class="post-content"  lang="ar" dir="rtl" set:html={article.content} />
+      <div class="post-content"  lang="ar" dir="rtl" set:html={article.body} />
 
       <footer class="post-footer">
         <div class="post-navigation">

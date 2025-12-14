@@ -230,44 +230,25 @@ export function convertStrapiArticle(strapiPost: StrapiEntity<StrapiArticle> | a
     rel?.data?.attributes?.slug || rel?.attributes?.slug || rel?.data?.slug || rel?.slug || null;
   const categorySlug = getRelSlug(attributes.category);
 
-  let content = '';
-  if (attributes.blocks && Array.isArray(attributes.blocks)) {
-    content = attributes.blocks.map((block: any) => {
-      if (block.__component === 'shared.rich-text' && block.body) {
-        let markdown = block.body.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_match: string, alt: string, url: string) => {
-          const fullUrl = url.startsWith('/') ? `${STRAPI_URL}${url}` : url;
-          return `![${alt}](${fullUrl})`;
-        });
+  let body = '';
 
-        const html = marked.parse(markdown, { async: false }) as string;
+  const makeImgAbsolute = (md: string) =>
+    md.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_match: string, alt: string, url: string) => {
+      const fullUrl = url.startsWith('/') ? `${STRAPI_URL}${url}` : url;
+      return `![${alt}](${fullUrl})`;
+    });
 
-        return html.trim();
-      }
-      if (block.__component === 'shared.quote' && block.quote) {
-        return `<blockquote>${block.quote}</blockquote>`;
-      }
-        if (block.__component === 'shared.media' && block.file) {
-          const fileUrl = getFileUrl(block.file);
-          const alt = block.file?.data?.attributes?.alternativeText || block.file?.attributes?.alternativeText || '';
-          if (fileUrl) {
-            const fullUrl = fileUrl.startsWith('/') ? `${STRAPI_URL}${fileUrl}` : fileUrl;
-            return `<img src="${fullUrl}" alt="${alt}" />`;
-          }
-        }
-      return '';
-    }).join('\n');
+  if (typeof attributes.body === 'string' && attributes.body.trim().length > 0) {
+    const md = makeImgAbsolute(attributes.body);
+    body = marked.parse(md, { async: false }) as string;
   }
 
-  if (!content && attributes.description) {
-    content = `<p>${attributes.description}</p>`;
-  }
-  
   return {
     id: strapiPost.id || 0,
     title: attributes.title,
     description: attributes.description || '',
-    content: content,
-    slug: attributes.slug || attributes.title?.toLowerCase().replace(/\s+/g, '-'),
+    body: body,
+    slug: attributes.slug,
     date: new Date(attributes.publishedAt || attributes.createdAt || new Date()),
     author: authorName,
     excerpt: attributes.description || '',
@@ -309,69 +290,25 @@ export function convertStrapiCommunique(strapiPost: StrapiEntity<StrapiArticle> 
     rel?.data?.attributes?.slug || rel?.attributes?.slug || rel?.data?.slug || rel?.slug || null;
   const categorySlug = getRelSlug(attributes.category);
 
-  let content = '';
-  if (attributes.blocks && Array.isArray(attributes.blocks)) {
-    content = attributes.blocks.map((block: any) => {
-      if (block.__component === 'shared.rich-text' && block.body) {
-        let markdown = block.body.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_match: string, alt: string, url: string) => {
-          const fullUrl = url.startsWith('/') ? `${STRAPI_URL}${url}` : url;
-          return `![${alt}](${fullUrl})`;
-        });
-        const html = marked.parse(markdown, { async: false }) as string;
-        return html.trim();
-      }
-      if (block.__component === 'shared.quote' && block.quote) {
-        return `<blockquote>${block.quote}</blockquote>`;
-      }
-      if (block.__component === 'shared.media' && block.file) {
-        const fileUrl = getFileUrl(block.file);
-        const alt = block.file?.data?.attributes?.alternativeText || block.file?.attributes?.alternativeText || '';
-        if (fileUrl) {
-          const fullUrl = fileUrl.startsWith('/') ? `${STRAPI_URL}${fileUrl}` : fileUrl;
-          return `<img src="${fullUrl}" alt="${alt}" />`;
-        }
-      }
-      return '';
-    }).join('\n');
-  }
+  let body = '';
 
-  let portableBlocksHtml = '';
-  if (attributes.blocks && Array.isArray(attributes.blocks) && attributes.blocks.length > 0 && attributes.blocks[0].type) {
-    const escapeHtml = (str: string) =>
-      String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
+  const makeImgAbsolute = (md: string) =>
+    md.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_match: string, alt: string, url: string) => {
+      const fullUrl = url.startsWith('/') ? `${STRAPI_URL}${url}` : url;
+      return `![${alt}](${fullUrl})`;
+    });
 
-    portableBlocksHtml = attributes.blocks
-      .map((blk: any) => {
-        if (blk.type === 'paragraph' && Array.isArray(blk.children)) {
-          const text = blk.children.map((c: any) => c.text || '').join('');
-          return `<p>${escapeHtml(text)}</p>`;
-        }
-        if (/^h[1-6]$/.test(blk.type) && Array.isArray(blk.children)) {
-          const text = blk.children.map((c: any) => c.text || '').join('');
-          return `<${blk.type}>${escapeHtml(text)}</${blk.type}>`;
-        }
-        return '';
-      })
-      .filter(Boolean)
-      .join('\n');
-  }
-
-  if (!content && attributes.description) {
-    content = `<p>${attributes.description}</p>`;
+  if (typeof attributes.body === 'string' && attributes.body.trim().length > 0) {
+    const md = makeImgAbsolute(attributes.body);
+    body = marked.parse(md, { async: false }) as string;
   }
 
   return {
-    id: strapiPost.id || 0,
+    id: strapiPost.id || attributes.id || 0,
     title: attributes.title,
     description: attributes.description || '',
-    content: content,
-    rich_text: portableBlocksHtml || content,
-    slug: attributes.slug || attributes.title?.toLowerCase().replace(/\s+/g, '-'),
+    body: body,
+    slug: attributes.slug,
     date: new Date(attributes.publishedAt || attributes.createdAt || new Date()),
     author: authorName,
     excerpt: attributes.description || '',
