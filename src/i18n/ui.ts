@@ -56,7 +56,7 @@ export const ui = {
     'article.readMore': 'اقرأ المزيد ←',
     'article.substack': 'لمزيد من المقالات، قم بزيارة منشورنا:',
     'article.substackName': 'اليمني على Substack',
-    'communiques.title': 'بيانات',
+    'communiques.title': 'البيانات',
     'communiques.description': 'تصريحات رسمية وبيانات صحفية وإعلانات من منظمتنا حول النضال من أجل سيادة اليمن والجهود المبذولة لمكافحة الفساد.',
     'communiques.readMore': 'اقرأ المزيد ←',
     'categories.title': 'التصنيفات',
