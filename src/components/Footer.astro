@@ -6,6 +6,7 @@ const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const currentYear = new Date().getFullYear();
 const isRTL = lang === 'ar';
+const { base = '' } = Astro.site ? { base: import.meta.env.BASE_URL } : { base: '' };
 ---
 
 <footer class="site-footer" dir={isRTL ? 'rtl' : 'ltr'}>
@@ -66,6 +67,17 @@ const isRTL = lang === 'ar';
         </a>
       )}
     </div>
+
+    <div class="footer-rss">
+      <a href={base + "rss.xml"} class="rss-toggle" title="RSS Feed" aria-label="RSS">
+        <span>RSS</span>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <circle cx="5" cy="19" r="2" fill="currentColor"/>
+          <path d="M3 3v2c8.284 0 15 6.716 15 15h2c0-9.389-7.611-17-17-17z" fill="currentColor"/>
+          <path d="M3 9v2c4.963 0 9 4.037 9 9h2c0-6.065-4.935-11-11-11z" fill="currentColor"/>
+        </svg>
+      </a>
+    </div>
   </div>
 </footer>
 
@@ -115,6 +127,7 @@ const isRTL = lang === 'ar';
     display: flex;
     gap: calc(var(--grid-unit) * 1.5);
     align-items: center;
+    margin-left: auto;
   }
 
   .social-link {
@@ -141,19 +154,59 @@ const isRTL = lang === 'ar';
     height: 20px;
   }
 
+  .footer-rss {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--grid-unit) * 1);
+  }
+
+  .rss-toggle {
+    background: none;
+    border: none;
+    color: var(--color-text-muted);
+    padding: calc(var(--grid-unit) / 2);
+    cursor: pointer;
+    transition: color 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    gap: calc(var(--grid-unit) * 1);
+  }
+
+  .rss-toggle:hover,
+  .rss-toggle:focus {
+    color: var(--color-accent);
+    outline: none;
+  }
+
   @media (max-width: 768px) {
+    .social-links {
+      order: 0;
+      margin-left: 0;
+    }
+
+    .footer-info {
+      order: 1;
+    }
+
+    .footer-rss {
+      order: 2;
+      align-self: center;
+    }
+
+    .rss-toggle {
+      padding: 0;
+    }
+
+    .rss-toggle svg {
+      width: 20px;
+      height: 20px;
+    }
     .footer-content {
       flex-direction: column;
       text-align: center;
       gap: calc(var(--grid-unit) * 2);
-    }
-
-    .footer-info {
-      order: 2;
-    }
-
-    .social-links {
-      order: 1;
     }
   }
 </style>
