@@ -62,7 +62,6 @@ services:
     environment:
       - WEBHOOK_PORT=9000
       - WEBHOOK_SECRET=${WEBHOOK_SECRET:-change-this-secret}
-      - REBUILD_SCRIPT=/app/rebuild-hook.sh
       - PUBLIC_STRAPI_URL=http://strapi:1337
     networks:
       - dev-network

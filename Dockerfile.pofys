@@ -15,8 +15,6 @@ WORKDIR /app
 RUN mkdir -p /app
 WORKDIR /app
 
-COPY rebuild-container.sh /rebuild.sh
-RUN chmod +x /rebuild.sh || true
 COPY nginx/nginx.simple.conf /etc/nginx/nginx.conf
 
 EXPOSE 80

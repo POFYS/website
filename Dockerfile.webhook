@@ -5,10 +5,7 @@ RUN apk add --no-cache bash docker-cli
 WORKDIR /app
 
 COPY webhook-server.js .
-COPY rebuild-hook.sh .
 COPY package.json .
-
-RUN chmod +x rebuild-hook.sh
 
 RUN mkdir -p /var/log
 

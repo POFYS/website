@@ -4,7 +4,7 @@ import crypto from 'crypto';
 
 const PORT = process.env.WEBHOOK_PORT || 9000;
 const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'your-secret-key-change-this';
-const REBUILD_SCRIPT = process.env.REBUILD_SCRIPT || './rebuild-hook.sh';
+const REBUILD_COMMAND = process.env.REBUILD_COMMAND;
 
 function verifySignature(payload, signature) {
   if (!signature) return true;
@@ -42,7 +42,7 @@ const server = http.createServer((req, res) => {
         const payload = JSON.parse(body);
         console.log(`[${new Date().toISOString()}] Webhook received:`, payload.event || 'unknown event');
 
-        exec(`bash ${REBUILD_SCRIPT}`, (error, stdout, stderr) => {
+        exec(REBUILD_COMMAND, (error, stdout, stderr) => {
           if (error) {
             console.error(`Rebuild error: ${error.message}`);
             console.error(`stderr: ${stderr}`);
