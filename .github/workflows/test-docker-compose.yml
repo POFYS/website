@@ -1,4 +1,4 @@
-name: Test Docker Compose
+name: Test Docker Compose Dev
 
 on:
   push:
@@ -17,8 +17,8 @@ jobs:
 
       - name: Copy .env files
         run: |
-          cp frontend/.env.example frontend/.env
-          cp cms/.env.example cms/.env
+          cp frontend/.env.example frontend/.env.dev
+          cp cms/.env.example cms/.env.dev
 
       - name: Build
         run: docker compose -f docker-compose.dev.yml build
