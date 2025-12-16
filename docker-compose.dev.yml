@@ -1,8 +1,9 @@
 services:
-  pofys-dev:
+  frontend-dev:
     image: node:lts
     container_name: pofys-dev
     working_dir: /app
+    container_name: frontend-dev
     ports:
       - "4321:4321"
     volumes:
@@ -61,8 +62,7 @@ services:
       - ./.env.dev:/app/.env.dev:ro
     environment:
       - WEBHOOK_PORT=9000
-      - WEBHOOK_SECRET=${WEBHOOK_SECRET:-change-this-secret}
-      - PUBLIC_STRAPI_URL=http://strapi:1337
+      - REBUILD_COMMAND=docker exec frontend-dev /app/rebuild.sh --no-nginx
     networks:
       - dev-network
     depends_on:
