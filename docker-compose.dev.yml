@@ -1,17 +1,16 @@
 services:
   frontend-dev:
     image: node:lts
-    container_name: pofys-dev
     working_dir: /app
     container_name: frontend-dev
     ports:
       - "4321:4321"
     volumes:
-      - .:/app
+      - ./frontend:/app
       - /app/node_modules
     command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
     env_file:
-      - .env.dev
+      - ./frontend/.env.dev
     depends_on:
       - strapi
     networks:
@@ -20,12 +19,11 @@ services:
 
   strapi:
     image: node:22-alpine
-    container_name: pofys-strapi-dev
     restart: unless-stopped
     working_dir: /srv/app
     command: sh -c "npm install && npm run develop"
     env_file:
-      - .env.dev
+      - ./cms/.env.dev
     volumes:
       - ./cms:/srv/app
     ports:
@@ -37,7 +35,6 @@ services:
 
   postgres:
     image: postgres:18-alpine
-    container_name: pofys-postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: strapi
@@ -50,16 +47,15 @@ services:
 
   webhook:
     build:
-      context: .
+      context: ./frontend
       dockerfile: Dockerfile.webhook
-    container_name: pofys-webhook
     restart: unless-stopped
     ports:
       - "9000:9000"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ../..:/workspace
-      - ./.env.dev:/app/.env.dev:ro
+    env_file:
+      - ./frontend/.env.dev
     environment:
       - WEBHOOK_PORT=9000
       - REBUILD_COMMAND=docker exec frontend-dev /app/rebuild.sh --no-nginx
