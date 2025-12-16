@@ -1,0 +1,52 @@
+# Dependencies
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build output
+dist
+dist-*
+.astro
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Testing
+coverage
+.nyc_output
+test-results
+playwright-report
+
+# CMS (not needed for static site build)
+cms/node_modules
+cms/.cache
+cms/build
+cms/public/uploads
+
+# Screenshots
+screenshots
+
+# Misc
+*.log
+.cache
+temp
+tmp

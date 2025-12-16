@@ -1,0 +1,28 @@
+# Tor Hidden Service Configuration
+
+# Run as daemon
+RunAsDaemon 0
+
+# Data directory
+DataDirectory /var/lib/tor
+
+# Hidden service configuration
+HiddenServiceDir /var/lib/tor/hidden_service/
+HiddenServicePort 80 pofys:80
+HiddenServiceVersion 3
+
+# Security and privacy settings
+# Avoid kernel info leaks
+DisableDebuggerAttachment 1
+
+# Logging (minimal for production)
+Log notice stdout
+
+# Circuit build timeout (helps with reliability)
+CircuitBuildTimeout 60
+
+# Use entry guards for better anonymity
+UseEntryGuards 1
+
+# Additional security options
+SafeLogging 1

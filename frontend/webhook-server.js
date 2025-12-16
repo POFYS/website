@@ -3,7 +3,7 @@ import { exec } from 'child_process';
 import crypto from 'crypto';
 
 const PORT = process.env.WEBHOOK_PORT || 9000;
-const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'your-secret-key-change-this';
+const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
 const REBUILD_COMMAND = process.env.REBUILD_COMMAND;
 
 function verifySignature(payload, signature) {
