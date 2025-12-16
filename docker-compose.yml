@@ -5,7 +5,6 @@ networks:
 services:
   nginx-proxy:
     image: nginx:alpine
-    container_name: pofys-nginx
     ports:
       - "80:80"
       - "443:443"
@@ -15,16 +14,15 @@ services:
     networks:
       - pofys-network
     depends_on:
-      - pofys
+      - frontend
       - strapi
       - webhook
     restart: unless-stopped
 
-  pofys:
+  frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile.frontend
-    container_name: pofys
     env_file:
       - ./frontend/.env
     volumes:
@@ -43,7 +41,6 @@ services:
 
   strapi:
     image: node:22-alpine
-    container_name: pofys-strapi
     restart: unless-stopped
     working_dir: /srv/app
     command: sh -c "npm install && npm run build && npm run start"
@@ -62,7 +59,6 @@ services:
 
   postgres:
     image: postgres:18-alpine
-    container_name: pofys-postgres
     restart: unless-stopped
     env_file:
       - ./cms/.env
@@ -75,7 +71,6 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile.webhook
-    container_name: pofys-webhook
     restart: unless-stopped
     env_file:
       - ./frontend/.env
@@ -85,17 +80,16 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - WEBHOOK_PORT=9000
-      - REBUILD_COMMAND=docker exec pofys /app/rebuild.sh
+      - REBUILD_COMMAND=docker compose exec -T frontend /app/rebuild.sh
     networks:
       - pofys-network
     depends_on:
-      - pofys
+      - frontend
 
   tor:
     build:
       context: ./tor
       dockerfile: Dockerfile.tor
-    container_name: pofys-tor
     volumes:
       - tor-data:/var/lib/tor/hidden_service/
     networks:

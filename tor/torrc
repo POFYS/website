@@ -8,7 +8,7 @@ DataDirectory /var/lib/tor
 
 # Hidden service configuration
 HiddenServiceDir /var/lib/tor/hidden_service/
-HiddenServicePort 80 pofys:80
+HiddenServicePort 80 frontend:80
 HiddenServiceVersion 3
 
 # Security and privacy settings
