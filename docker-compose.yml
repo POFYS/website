@@ -23,6 +23,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile.frontend
+    container_name: frontend
     env_file:
       - ./frontend/.env
     volumes:
@@ -80,7 +81,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - WEBHOOK_PORT=9000
-      - REBUILD_COMMAND=docker compose exec -T frontend /app/rebuild.sh
+      - REBUILD_COMMAND=docker exec frontend /app/rebuild.sh
     networks:
       - pofys-network
     depends_on:
