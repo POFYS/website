@@ -1,45 +1,76 @@
-# Website
+# POFYS Website
+
+[![Test Docker Compose Dev](https://github.com/POFYS/website/actions/workflows/test-docker-compose.yml/badge.svg)](https://github.com/POFYS/website/actions/workflows/test-docker-compose.yml)
 
 ### Tech:
+
 [![Astro](https://img.shields.io/badge/Astro-FF5A5F?style=for-the-badge&logo=astro&logoColor=white)](https://astro.build) [![Strapi](https://img.shields.io/badge/Strapi-1E90FF?style=for-the-badge&logo=strapi&logoColor=white)](https://strapi.io) [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org) [![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com) [![Nginx](https://img.shields.io/badge/Nginx-009639?style=for-the-badge&logo=nginx&logoColor=white)](https://www.nginx.com) [![Tor](https://img.shields.io/badge/Tor-4E2A8E?style=for-the-badge&logo=torproject&logoColor=white)](https://www.torproject.org)
 
-# Description
-Repository for Popular Organization of Free Yemeni Socialists (POFYS) website. The website is built using Astro for the frontend and Strapi as the headless CMS, with PostgreSQL as the database.
+## Description
 
-The website serves as a platform to share information about the organization's mission, activities, and publications.
+The repository for the Popular Organization of Free Yemeni Socialists (POFYS) website. This website serves as a platform to share information about the organization's mission, activities, and publications.
 
-# Features
-### Content Management
-- Manage articles, communiques, authors, categories, and media assets.
-- Rich text editing and media uploads.
-- Role-based access control for content editors and administrators.
-### Static Site Generation
-- Fast loading times with pre-rendered pages using Astro.
-- Improved security with a static frontend.
-### SEO Optimization
-- SEO-friendly URLs, meta tags, and sitemaps.
-### Responsive Design
-- Mobile-friendly layout for optimal viewing on various devices.
-### Webhooks
-- Automatic frontend rebuilds on content updates via webhooks.
-### Multi-language Support
-- Content available in English and Arabic for broader reach.
-### Onion Site
-- Accessible via Tor network for enhanced privacy and censorship resistance.
+## Features
 
-# Links
-## Production
-- Clear Site: https://freeyemenis.org/
-- Onion Site: http://pofys5jnmmdhmvtdt7ip6wq4fpe464tttk2eijw7tch3cnucdxnjwkyd.onion
-- Strapi Admin Panel: https://freeyemenis.org/admin
-## Local Development
+This project combines a headless CMS (Strapi) with a static-first frontend (Astro) to deliver a fast, secure, and content-driven website. Key capabilities:
+
+- Content management
+  - Manage articles, communiques, authors, categories and media from Strapi.
+  - Rich-text editing, image uploads, and role-based access for editors and administrators.
+
+- Static-first frontend
+  - Pre-rendered pages with Astro for fast performance and reduced server attack surface.
+  - Incremental rebuilds triggered by Strapi webhooks for near-real-time updates.
+
+- SEO & accessibility
+  - SEO-friendly URLs, meta tags, XML sitemaps and RSS feeds.
+  - Responsive, semantic markup to support mobile devices and assistive technologies.
+
+- Internationalization
+  - Built-in support for English and Arabic content with localized routes and metadata.
+
+- Security & privacy
+  - HTTPS-ready deployment and Tor (onion) mirror for censorship-resistant access.
+  - Backend role-based access control and hardened containerized deployment.
+
+- Media & assets
+  - Centralized media uploads with public asset hosting and optional image optimization.
+
+- Deployment & developer experience
+  - Docker Compose for local development and production deployment.
+  - Webhook-driven CI-friendly rebuilds and helper scripts to streamline operations.
+
+- Extensibility
+  - Strapi plugins and custom APIs make it easy to extend content models and integrations.
+
+## Links
+
+### Production
+
+- Public site: https://freeyemenis.org/
+- Onion (Tor) mirror: http://pofys5jnmmdhmvtdt7ip6wq4fpe464tttk2eijw7tch3cnucdxnjwkyd.onion
+- Strapi admin panel: https://freeyemenis.org/admin
+
+### Local development (default)
+
 - Frontend: http://localhost:4321
-- Strapi Admin Panel: http://localhost:1337/admin
+- Strapi admin panel: http://localhost:1337/admin
 
-# Requirements
-- Docker and Docker Compose
+Notes
 
-# Setup Instructions
+- Local ports above assume the development Docker Compose configuration (`docker-compose.dev.yml`). If you customize ports in your environment, update the `.env.dev`/`.env` files accordingly.
+- For production the project expects TLS certificate files at `.keys/freeyemenis.org.pem` and `.keys/freeyemenis.org.key` (see Setup Instructions).
+
+## Requirements
+
+- Docker Engine and Docker Compose (Compose V2 recommended)
+- Recommended for local development only: Node.js (18+) and npm or yarn — required if you run frontend or CMS outside Docker or want to run local build scripts directly.
+- Disk space and network access sufficient for Docker images and pulling dependencies.
+- (Production) Valid TLS certificate and key files placed at `.keys/` when running the production compose stack.
+
+If you prefer to avoid installing Node locally, the project is fully runnable via Docker Compose (see Setup Instructions).
+
+## Setup Instructions
 ### 1. Clone the repository and navigate to the project directory:
   ```bash
   git clone https://github.com/POFYS/website.git
@@ -106,9 +137,9 @@ The website serves as a platform to share information about the organization's m
    docker compose -f docker-compose.yml down
    ```
 
-# License
+## License
 This project is licensed under the MIT License.
 See the [LICENSE](LICENSE) file for details.
 
-# Contributing
+## Contributing
 Contributions are welcome! Please open an issue or submit a pull request for any improvements or bug fixes.
