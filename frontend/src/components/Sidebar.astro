@@ -25,7 +25,7 @@ try {
 
 let categories: any[] = [];
 try {
-  const categoriesResponse = await getCategories();
+  const categoriesResponse = await getCategories({ locale: lang });
   categories = categoriesResponse.data.filter(cat => cat.slug && cat.name);
 } catch (error) {
   console.error('Failed to fetch categories for sidebar:', error);
