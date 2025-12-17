@@ -7,20 +7,20 @@ export async function getStaticPaths() {
   const paths: any[] = [];
 
   try {
-    const categoriesResponse = await getCategories();
-    
+    const categoriesResponse = await getCategories({ locale: 'en' });
+
     for (const category of categoriesResponse.data) {
-      
       if (!category.slug || !category.name) {
         console.warn('Category missing slug or name:', category);
         continue;
       }
-      
+
       const articlesResponse = await getArticlesByCategory(category.slug, {
         sort: 'publishedAt:desc',
-        pageSize: 100
+        pageSize: 100,
+        locale: 'en'
       });
-      
+
       const articles = articlesResponse.data
         .map(convertStrapiArticle)
         .filter(article => article !== null)
@@ -34,12 +34,20 @@ export async function getStaticPaths() {
             readingTime: calculateReadingTime(plainText)
           };
         });
-      
+
+  const localizedAlternates: Record<string, string> = {};
+  const localizations = (category as any).localizations || [];
+      const arLoc = localizations.find((l: any) => l.locale === 'ar');
+      if (arLoc && arLoc.slug) {
+        localizedAlternates['ar'] = `/ar/categories/${arLoc.slug}`;
+      }
+
       paths.push({
         params: { category: category.slug },
         props: {
           category: category.name,
-          articles
+          articles,
+          localizedAlternates
         }
       });
     }
@@ -50,11 +58,15 @@ export async function getStaticPaths() {
   return paths;
 }
 
-const { category, articles } = Astro.props;
-const base = import.meta.env.BASE_URL;
+const { category, articles, localizedAlternates = {} } = Astro.props;
+const base = (import.meta as any).env?.BASE_URL || '/';
 ---
 
-<Layout title={`${category} - POFYS`} description={`All articles in the ${category} category`}>
+<Layout
+  title={`${category} - POFYS`}
+  description={`All articles in the ${category} category`}
+  localizedAlternates={localizedAlternates}
+>
   <div class="category-page">
     <header class="page-header">
       <h1 class="page-title">{category}</h1>
