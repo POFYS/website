@@ -14,7 +14,7 @@ try {
     pageSize: 3,
     locale: 'en'
   });
-  
+
   sortedPosts = articlesResponse.data
     .map(convertStrapiArticle)
     .filter(article => article !== null)
@@ -59,7 +59,7 @@ try {
           POFYS is dedicated to restoring Yemen's sovereignty to its people through justice, unity, and anti-corruption measures. 
           We reject all forms of foreign dependency and internal corruption that have betrayed our nation's dignity and independence.
         </p>
-        
+
         {sortedPosts.length > 0 && (
           <div>
             <h3 style="text-align: center; font-family: var(--font-heading-secondary); font-size: 1.75rem; margin-bottom: calc(var(--grid-unit) * 4); color: var(--color-text-primary);">Latest Articles</h3>
@@ -69,48 +69,48 @@ try {
                   <h3 class="demo-post-title">
                     <a href={`${import.meta.env.BASE_URL}articles/${post.slug}`}>{post.title}</a>
                   </h3>
-                  
-                        <div class="demo-post-meta">
-                          <div class="meta-left">
-                            {post.date && (
-                              <time class="demo-post-date" datetime={new Date(post.date).toISOString()}>
-                                {new Date(post.date).toLocaleDateString('en-GB', {
-                                  year: 'numeric',
-                                  month: 'long',
-                                  day: 'numeric'
-                                })}
-                              </time>
-                            )}
 
-                            {post.author && (
-                              <span class="post-author">{post.author}</span>
-                            )}
-                          </div>
+                  <div class="demo-post-meta">
+                    <div class="meta-left">
+                      {post.date && (
+                        <time class="demo-post-date" datetime={new Date(post.date).toISOString()}>
+                          {new Date(post.date).toLocaleDateString('en-GB', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                        </time>
+                      )}
 
-                          <div class="meta-right">
-                            {post.readingTime && (
-                              <span class="demo-post-reading-time">{post.readingTime}</span>
-                            )}
+                      {post.author && (
+                        <span class="post-author">{post.author}</span>
+                      )}
+                    </div>
 
-                            {post.category?.slug && post.category?.name && (
-                              <div class="demo-post-categories">
-                                <a href={`${import.meta.env.BASE_URL}categories/${post.category.slug}`} class="demo-category">{post.category.name}</a>
-                              </div>
-                            )}
-                          </div>
+                    <div class="meta-right">
+                      {post.readingTime && (
+                        <span class="demo-post-reading-time">{post.readingTime}</span>
+                      )}
+
+                      {post.category?.slug && post.category?.name && (
+                        <div class="demo-post-categories">
+                          <a href={`${import.meta.env.BASE_URL}categories/${post.category.slug}`} class="demo-category">{post.category.name}</a>
                         </div>
-                  
+                      )}
+                    </div>
+                  </div>
+
                   {post.excerpt && (
                     <p class="demo-post-excerpt">{post.excerpt}</p>
                   )}
-                  
+
                   {/* categories moved into meta-right */}
                 </article>
               ))}
             </div>
           </div>
         )}
-        
+
         <div class="demo-actions">
           <a href={`${import.meta.env.BASE_URL}articles`} class="btn btn-primary">Read All Articles</a>
         </div>
@@ -157,7 +157,7 @@ try {
         <p class="typography-description">
           Understanding the crisis of corruption and foreign dependency that has brought Yemen to its knees
         </p>
-        
+
         <div class="context-content">
           <div class="context-block">
             <h3 class="context-title">High Treason Against the People</h3>
@@ -168,7 +168,7 @@ try {
               and hunger to us. They have sold Yemen's sovereignty for a low price.
             </p>
           </div>
-          
+
           <div class="context-block">
             <h3 class="context-title">The Time of Silence is Over</h3>
             <p class="context-text">
@@ -178,7 +178,7 @@ try {
               greater than their loyalty to the homeland and its citizens.
             </p>
           </div>
-          
+
           <div class="context-block">
             <h3 class="context-title">A Call to Unity</h3>
             <p class="context-text">
@@ -208,7 +208,7 @@ try {
               <a href={`${import.meta.env.BASE_URL}articles`} class="btn btn-secondary" style="margin-top: calc(var(--grid-unit) * 2);">Browse Articles</a>
             </div>
           </div>
-          
+
           <div class="step">
             <h3 class="step-number">02</h3>
             <div class="step-content">
@@ -220,7 +220,7 @@ try {
               <a href={`${import.meta.env.BASE_URL}contact`} class="btn btn-secondary" style="margin-top: calc(var(--grid-unit) * 2);">Contact POFYS</a>
             </div>
           </div>
-          
+
           <div class="step">
             <h3 class="step-number">03</h3>
             <div class="step-content">
