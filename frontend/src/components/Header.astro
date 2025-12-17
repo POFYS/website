@@ -17,16 +17,27 @@ function getLanguageSwitchPath(targetLang: string) {
     const prefix = base || '';
     return (prefix + rawAlt).replace(/\/+/g, '/');
   }
-
   const fullPath = Astro.url.pathname || '/';
   const pathWithoutLang = fullPath.replace(/^\/(?:en|ar)(?=\/|$)/, '') || '/';
-    if (pathWithoutLang.startsWith('/articles/')) {
-      const prefix = base || '';
-      if (targetLang === 'ar') {
-        return `${prefix}ar/article-unavailable`.replace(/\/+/g, '/');
-      }
-      return `${prefix}article-unavailable`.replace(/\/+/g, '/');
+
+  const articleSlugRegex = /^\/articles\/[^\/]+\/?$/;
+  const communiqueSlugRegex = /^\/communiques\/[^\/]+\/?$/;
+
+  if (articleSlugRegex.test(pathWithoutLang)) {
+    const prefix = base || '';
+    if (targetLang === 'ar') {
+      return `${prefix}ar/page-unavailable/article`.replace(/\/+/g, '/');
     }
+    return `${prefix}page-unavailable/article`.replace(/\/+/g, '/');
+  }
+
+  if (communiqueSlugRegex.test(pathWithoutLang)) {
+    const prefix = base || '';
+    if (targetLang === 'ar') {
+      return `${prefix}ar/page-unavailable/communique`.replace(/\/+/g, '/');
+    }
+    return `${prefix}page-unavailable/communique`.replace(/\/+/g, '/');
+  }
   const prefix = base || '';
 
   const enPath = pathWithoutLang === '/' ? '/' : pathWithoutLang;

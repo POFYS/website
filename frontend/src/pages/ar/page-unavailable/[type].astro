@@ -1,0 +1,90 @@
+---
+import Layout from '../../../components/Layout.astro';
+
+export async function getStaticPaths() {
+  return [
+    { params: { type: 'article' } },
+    { params: { type: 'communique' } }
+  ];
+}
+
+const type = Astro.params.type || 'article';
+const key = (type === 'communique' || type === 'communiques') ? 'communique' : 'article';
+
+const labels: Record<string, any> = {
+  article: {
+    title: 'المقال غير متوفر',
+    description: 'هذا المقال غير متوفر باللغة المختارة بعد.',
+    primary: 'العودة إلى المقالات الإنجليزية',
+    secondary: 'تصفح المقالات العربية',
+    primaryHref: '/articles',
+    secondaryHref: '/ar/articles'
+  },
+  communique: {
+    title: 'البيان غير متوفر',
+    description: 'هذا البيان غير متوفر باللغة المختارة بعد.',
+    primary: 'العودة إلى البيانات الإنجليزية',
+    secondary: 'تصفح البيانات العربية',
+    primaryHref: '/communiques',
+    secondaryHref: '/ar/communiques'
+  }
+};
+
+const current = labels[key];
+---
+
+<Layout title={current.title} description={current.description}>
+  <div class="unavailable-page" lang="ar" dir="rtl">
+    <header class="page-header">
+      <h1>{current.title}</h1>
+      <p>{current.description}</p>
+    </header>
+
+    <div class="actions">
+      <a href={current.primaryHref} class="btn">{current.primary}</a>
+      <a href={current.secondaryHref} class="btn secondary">{current.secondary}</a>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .unavailable-page {
+    max-width: 680px;
+    margin: 4rem auto;
+    text-align: center;
+  }
+
+  .page-header h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .page-header p {
+    color: var(--color-text-secondary);
+    margin-bottom: 1.5rem;
+  }
+
+  .actions {
+    display:flex;
+    gap:1rem;
+    justify-content:center;
+    margin-top:1.5rem;
+    flex-wrap:wrap;
+  }
+
+  .btn {
+    display:inline-block;
+    padding:0.75rem 1.25rem;
+    background:var(--color-accent);
+    color:white;
+    text-decoration:none;
+    border-radius:6px;
+    font-weight:700;
+  }
+
+  .btn.secondary {
+    background:transparent;
+    color:var(--color-text-primary);
+    border:2px solid var(--color-border);
+  }
+</style>
