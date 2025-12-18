@@ -29,28 +29,28 @@ const { social } = config;
         
         <div class="contact-links">
           {social.email && (
-            <a href={`mailto:${social.email}`} class="contact-link">
+            <a href={`mailto:${social.email}`} class="contact-link" data-umami-event="Email Click">
               <span class="contact-label">Email</span>
               {social.email}
             </a>
           )}
           
           {social.twitter && (
-            <a href={social.twitter} target="_blank" rel="noopener noreferrer" class="contact-link">
+            <a href={social.twitter} target="_blank" rel="noopener noreferrer" class="contact-link" data-umami-event="Twitter Click">
               <span class="contact-label">Twitter/X</span>
               @free_yemenis
             </a>
           )}
           
           {social.instagram && (
-            <a href={social.instagram} target="_blank" rel="noopener noreferrer" class="contact-link">
+            <a href={social.instagram} target="_blank" rel="noopener noreferrer" class="contact-link" data-umami-event="Instagram Click">
               <span class="contact-label">Instagram</span>
               @free.yemenis
             </a>
           )}
           
           {social.substack && (
-            <a href={social.substack} target="_blank" rel="noopener noreferrer" class="contact-link">
+            <a href={social.substack} target="_blank" rel="noopener noreferrer" class="contact-link" data-umami-event="Substack Click">
               <span class="contact-label">Substack</span>
               The Yemenite
             </a>
