@@ -64,7 +64,7 @@ export async function GET(context) {
   });
 
   return rss({
-    title: config.title,
+    title: config.title.en,
     description: config.description,
     site: context.site,
     items,
