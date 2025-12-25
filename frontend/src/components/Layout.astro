@@ -28,13 +28,14 @@ export interface Props {
   publishedTime?: string;
   canonical?: string;
   localizedAlternates?: Record<string, string>;
+  lang?: string;
 }
 
-const { title, description, showSidebar = true, image, type, publishedTime, canonical, localizedAlternates } = Astro.props;
+const { title, description, showSidebar = true, image, type, publishedTime, canonical, localizedAlternates, lang = 'en' } = Astro.props;
 ---
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang={lang}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -48,6 +49,7 @@ const { title, description, showSidebar = true, image, type, publishedTime, cano
       type={type}
       publishedTime={publishedTime}
       canonical={canonical}
+      lang={lang}
     />
   </head>
   <body>

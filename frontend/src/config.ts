@@ -1,5 +1,8 @@
 export interface SiteConfig {
-  title: string;
+  title: {
+    en: string;
+    ar: string;
+  };
   description: string;
   author: {
     name: string;
@@ -18,7 +21,10 @@ export interface SiteConfig {
 }
 
 export const config: SiteConfig = {
-  title: "Free Yemenis",
+  title: {
+    en: "Free Yemenis | POFYS",
+    ar: "اليمنيون الأحرار"
+  },
   description: "",
   author: {
     name: "POFYS",
